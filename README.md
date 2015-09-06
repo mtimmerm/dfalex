@@ -32,4 +32,4 @@ DFALex is written by Matt Timmermans, and is all new code.  It's written in Java
 
 DFAs are generated from NFAs with a starndard powerset construction, and minimized used a fast hash-based variant of Hopcroft's algorithm.
 
-This project was started because lexical analysis is no big deal.  You should be able to just do it, without having to convince your team to add a new build step to generate code from a domain specific language that nobody should have to learn.
+This project was started because lexical analysis is no big deal.  You should be able to just do it, without having to convince your team to add a new build step to generate code from a domain specific language.  This way you can use it for lots of little jobs, instead of just big, important ones.

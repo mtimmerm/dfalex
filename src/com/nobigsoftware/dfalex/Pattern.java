@@ -35,12 +35,14 @@ public abstract class Pattern implements Serializable
     /**
      * Pattern that matches one or more decimal digits
      */
-    public static final Pattern DIGITS = repeat(CharRange.DIGITS);
+    //Can't use CharRange statics -- not initialized yet
+    public static final Pattern DIGITS = repeat(new CharRange('0','9'));
     
     /**
      * Pattern that matches one or more hexadecimal digits
      */
-    public static final Pattern HEXDIGITS = repeat(CharRange.HEXDIGITS);
+    //Can't use CharRange statics -- not initialized yet
+    public static final Pattern HEXDIGITS = repeat(CharRange.builder().addRange('0', '9').addRange('a','f').addRange('A','F').build());
     
     /**
      * Pattern that matches an optional sign, followed by one or more decimal digits
@@ -66,11 +68,6 @@ public abstract class Pattern implements Serializable
      * Anything this matches is valid for {@link Double#parseDouble(String)}, if the value fits
      */
     public static final Pattern DECIMAL = anyOf(FLOAT_DECIMAL,INTEGER);
-    
-    /**
-     * Java identifier (doesn't exclude keywords, true, false, and null)
-     */
-    public static final Pattern JAVA_IDENTIFIER = CharRange.JAVA_LETTER.thenMaybeRepeat(CharRange.JAVA_ID_CHAR);
     
     /**
      * Typical Java/C/CSS - style block comment

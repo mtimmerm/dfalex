@@ -18,9 +18,16 @@ Start Here:
 
 * **StringMatcher** for using your DFAs to find patterns in strings
 
-Requirements:
--------------
+Requirements
+------------
 
 DFAlex needs Java 8 or better.  No special libraries are required. Just grab the source in src/ or a jar from bin/.  There won't be any official releases until more tests and examples are added.
 
 If you want to run the tests, you'll need JUnit4.
+
+About
+-----
+
+DFALex is written by Matt Timmermans, and is all new code.
+DFAs are generated from NFAs with a starndard powerset construction, and minimized used a very fast hash-based variant of Hopcroft's algorithm.
+

@@ -28,6 +28,6 @@ If you want to run the tests, you'll need JUnit4.
 About
 -----
 
-DFALex is written by Matt Timmermans, and is all new code.
-DFAs are generated from NFAs with a starndard powerset construction, and minimized used a very fast hash-based variant of Hopcroft's algorithm.
+DFALex is written by Matt Timmermans, and is all new code.  It's written in Java first, with too much attention paid to performance.
 
+DFAs are generated from NFAs with a starndard powerset construction, and minimized used a fast hash-based variant of Hopcroft's algorithm.

@@ -21,7 +21,7 @@ Start Here:
 Requirements
 ------------
 
-DFAlex needs Java 8 or better.  No special libraries are required. Just grab the source in src/ or a jar from bin/.  There won't be any official releases until more tests and examples are added.
+DFALex needs Java 8 or better.  No special libraries are required. Just grab the source in src/ or a jar from bin/.  There won't be any official releases until more tests and examples are added.
 
 If you want to run the tests, you'll need JUnit4.
 
@@ -31,3 +31,5 @@ About
 DFALex is written by Matt Timmermans, and is all new code.  It's written in Java first, with too much attention paid to performance.
 
 DFAs are generated from NFAs with a starndard powerset construction, and minimized used a fast hash-based variant of Hopcroft's algorithm.
+
+This project was started because lexical analysis is no big deal.  You should be able to just do it, without having to convince your team to add a new build step to generate code from a domain specific language that nobody should have to learn.

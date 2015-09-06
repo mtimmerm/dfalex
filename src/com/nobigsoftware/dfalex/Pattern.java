@@ -132,7 +132,7 @@ public abstract class Pattern implements Serializable
 	/**
 	 * Create a pattern that matches all single characters with a range of values
 	 * <P>
-	 * The pattern will match a character c if from <= c <= to.
+	 * The pattern will match a character c if from &lt;= c &lt;= to.
 	 * 
 	 * @param from inclusive lower bound 
 	 * @param to inclusive upper bound
@@ -278,7 +278,7 @@ public abstract class Pattern implements Serializable
     /**
      * Create a pattern that strings from this pattern, followed by a given string, case dependent
      * 
-     * @param tocat    pattern to append to this one
+     * @param str  string to append to this pattern
      * @return the new pattern
      */
 	public Pattern then(String str)
@@ -289,7 +289,7 @@ public abstract class Pattern implements Serializable
     /**
      * Create a pattern that strings from this pattern, followed by a given string, case independent
      * 
-     * @param tocat    pattern to append to this one
+     * @param str  string to append to this pattern
      * @return the new pattern
      */
     public Pattern thenI(String str)
@@ -349,7 +349,7 @@ public abstract class Pattern implements Serializable
      * Create a pattern that matches strings from this pattern, maybe followed by a
      * match of the given string, case dependent
      * 
-     * @param st the given string
+     * @param str the given string
      * @return the new pattern
      */
 	public Pattern thenMaybe(String str)
@@ -361,7 +361,7 @@ public abstract class Pattern implements Serializable
      * Create a pattern that matches strings from this pattern, maybe followed by a
      * match of the given string, case independent
      * 
-     * @param st the given string
+     * @param str the given string
      * @return the new pattern
      */
     public Pattern thenMaybeI(String str)

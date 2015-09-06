@@ -22,7 +22,7 @@ import java.util.Arrays;
  * range of characters characters.  It regular expressions, such a patter is written
  * with [ ...stuff... ]
  * <P>
- * Several commonly used ranges are provided as constants (e.g., {@link INTDIGITS}) and
+ * Several commonly used ranges are provided as constants (e.g., {@link #DIGITS}) and
  * the {@link Builder} class can be used to construct simple and complex ranges. 
  */
 public class CharRange extends Pattern

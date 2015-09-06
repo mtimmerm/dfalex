@@ -107,6 +107,7 @@ public class DfaBuilder<MATCHRESULT extends Serializable>
      * @param ambiguityResolver     When patterns for multiple results match the same string, this is called to
      *                              combine the multiple results into one.  If this is null, then a DfaAmbiguityException
      *                              will be thrown in that case.
+     *  @return The start state for a DFA that matches the set of patterns in language
      */
     public DfaState<MATCHRESULT> build(Set<MATCHRESULT> language, DfaAmbiguityResolver<MATCHRESULT> ambiguityResolver)
     {
@@ -125,6 +126,8 @@ public class DfaBuilder<MATCHRESULT extends Serializable>
 	 * @param ambiguityResolver	 	When patterns for multiple results match the same string, this is called to
 	 * 								combine the multiple results into one.	If this is null, then a DfaAmbiguityException
 	 * 								will be thrown in that case.
+	 * @return Start states for DFAs that match the given languages.  This will have the same length as languages, with
+	 *         corresponding start states in corresponding positions.
 	 */
     @SuppressWarnings("unchecked")
     public List<DfaState<MATCHRESULT>> build(List<Set<MATCHRESULT>> languages, DfaAmbiguityResolver<MATCHRESULT> ambiguityResolver)

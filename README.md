@@ -17,3 +17,10 @@ Start Here:
 * **Pattern** and **CharRange** for specifying patterns to match
 
 * **StringMatcher** for using your DFAs to find patterns in strings
+
+Requirements:
+-------------
+
+DFAlex needs Java 8 or better.  No special libraries are required. Just grab the source in src/ or a jar from bin/.  There won't be any official releases until more tests and examples are added.
+
+If you want to run the tests, you'll need JUnit4.

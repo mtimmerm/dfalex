@@ -16,35 +16,9 @@
 package com.nobigsoftware.dfalex;
 
 /**
- * Implementation of an empty DFA state that accepts no strings
+ * A functional interface that can accept transitions
  */
-class EmptyDfaStateImpl<MATCH> extends DfaStateImpl<MATCH>
+public interface DfaTransitionConsumer<MATCHRESULT>
 {
-	@Override
-	void fixPlaceholderReferences()
-	{
-	}
-
-	@Override
-	DfaStateImpl<MATCH> resolvePlaceholder()
-	{
-		return this;
-	}
-
-	@Override
-	public DfaState<MATCH> getNextState(char c)
-	{
-		return null;
-	}
-
-	@Override
-	public MATCH getMatch()
-	{
-		return null;
-	}
-
-    @Override
-    public void enumerateTransitions(DfaTransitionConsumer<MATCH> consumer)
-    {
-    }
+    void acceptTransition(char firstChar, char lastChar, DfaState<MATCHRESULT> target);
 }

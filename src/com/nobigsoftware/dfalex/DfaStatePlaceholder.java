@@ -18,10 +18,11 @@ package com.nobigsoftware.dfalex;
 import java.util.List;
 
 /**
- * Base class for placeholders that constructs final-form DFA states and
- * temporarily assumes their place in the DFA.
+ * Base class for serializable placeholders that construct final-form DFA states and
+ * temporarily assume their places in the DFA.
  * <P>
- * Placeholders are serializable
+ * In serialized placeholders, target states are identified by their state number in a
+ * SerializableDfa.
  */
 abstract class DfaStatePlaceholder<MATCH> extends DfaStateImpl<MATCH> implements java.io.Serializable
 {
@@ -72,4 +73,10 @@ abstract class DfaStatePlaceholder<MATCH> extends DfaStateImpl<MATCH> implements
 	{
 		return m_delegate.getMatch();
 	}
+    @Override
+    public void enumerateTransitions(DfaTransitionConsumer<MATCH> consumer)
+    {
+        m_delegate.enumerateTransitions(consumer);
+    }
+	
 }

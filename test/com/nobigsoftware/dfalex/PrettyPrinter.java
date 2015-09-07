@@ -1,12 +1,10 @@
 package com.nobigsoftware.dfalex;
 
-import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Writer;
 import java.util.ArrayDeque;
 import java.util.HashMap;
 
-import com.nobigsoftware.dfalex.DfaState;
+import org.junit.Assert;
 
 public class PrettyPrinter
 {
@@ -98,19 +96,11 @@ public class PrettyPrinter
         if (ret == null)
         {
             StringBuilder stb = new StringBuilder();
-            for (int c=0; c<65536; ++c)
-            {
-                DfaState<?> target = state.getNextState((char)c);
-                if (target == null)
-                {
-                    continue;
-                }
-                int endc = c;
-                for (;endc < 65535 && state.getNextState((char)(endc+1))==target ;++endc);
-                stb.append((char)c);
-                stb.append((char)endc);
-                c=endc;
-            }
+            state.enumerateTransitions((startc, endc, newstate) -> {
+                stb.append(startc);
+                stb.append(endc);
+                Assert.assertEquals(state.getNextState(startc), newstate);                
+            }); 
             ret = stb.toString();
             m_transMemo.put(state, ret);
         }

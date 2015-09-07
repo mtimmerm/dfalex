@@ -2,6 +2,7 @@ package com.nobigsoftware.dfalex;
 
 import java.util.Collections;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.nobigsoftware.dfalex.CharRange;
@@ -38,8 +39,8 @@ public class By3Test extends TestBase
         DfaBuilder<Boolean> builder = new DfaBuilder<>();
         builder.addPattern(By3, true);
         DfaState<?> start = builder.build(Collections.singleton(Boolean.TRUE), null);
-        
-        this.checkDfa(start, "By3Test.out.txt", true);
+        Assert.assertEquals(3, _countStates(start));
+        _checkDfa(start, "By3Test.out.txt", true);
     }
     
 

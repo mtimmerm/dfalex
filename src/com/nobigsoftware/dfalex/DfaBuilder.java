@@ -54,7 +54,8 @@ import com.nobigsoftware.util.SHAOutputStream;
  * You can provide a cache that can remember and recall built DFAs, which allows you to build DFAs
  * during your build process in various ways, instead of building them at runtime.  Or you can use
  * the cache to store built DFAs on the first run of your program so they don't need to be built
- * the next time.
+ * the next time...  But this is usually unnecessary, since building DFAs is more fast enough to
+ * do during runtime initialization.
  * 
  * @param MATCHRESULT The type of result to produce by matching a pattern.  This must be serializable
  *      to support caching of built DFAs
@@ -97,6 +98,21 @@ public class DfaBuilder<MATCHRESULT extends Serializable>
 	}
 	
 	
+    /**
+     * Build DFA for a single language
+     * <P>
+     * The resulting DFA matches ALL patterns that have been added to this builder
+     * 
+     * @param ambiguityResolver     When patterns for multiple results match the same string, this is called to
+     *                              combine the multiple results into one.  If this is null, then a DfaAmbiguityException
+     *                              will be thrown in that case.
+     *  @return The start state for a DFA that matches the set of patterns in language
+     */
+    public DfaState<MATCHRESULT> build(DfaAmbiguityResolver<MATCHRESULT> ambiguityResolver)
+    {
+        return build(Collections.singletonList(m_patterns.keySet()), ambiguityResolver).get(0);
+    }
+
     /**
      * Build DFA for a single language
      * <P>

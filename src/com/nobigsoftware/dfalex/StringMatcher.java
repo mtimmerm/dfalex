@@ -229,4 +229,25 @@ public class StringMatcher
         }
         return ret;
     }
+    
+    /**
+     * See if a whole string matches a DFA
+     * 
+     * @param state  DFA start state
+     * @param str string to test
+     * @return If the whole string matches the DFA, this is the match result produced.  Otherwise null.
+     */
+    static public <MATCHRESULT> MATCHRESULT matchWholeString(DfaState<MATCHRESULT> state, String str)
+    {
+        final int len = str.length();
+        for (int i=0; i<len; i++)
+        {
+            if (state == null)
+            {
+                return null;
+            }
+            state = state.getNextState(str.charAt(i));
+        }
+        return (state == null ? null : state.getMatch());
+    }
 }

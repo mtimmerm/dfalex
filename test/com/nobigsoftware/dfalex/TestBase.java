@@ -5,16 +5,40 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
+import java.util.ArrayDeque;
+import java.util.HashSet;
 
 import org.junit.Assert;
-
-import com.nobigsoftware.dfalex.DfaState;
 
 public class TestBase
 {
     final PrettyPrinter m_printer = new PrettyPrinter();
 
-    void checkDfa(DfaState<?> start, String resource, boolean doStdout) throws Exception
+    int _countStates(DfaState<?>... starts)
+    {
+        ArrayDeque<DfaState<?>> togo = new ArrayDeque<>();
+        HashSet<DfaState<?>> checkSet = new HashSet<>();
+        for (DfaState<?> start : starts)
+        {
+            if (checkSet.add(start))
+            {
+                togo.add(start);
+            }
+        }
+        while(!togo.isEmpty())
+        {
+            DfaState<?> scanst = togo.removeFirst();
+            scanst.enumerateTransitions((c1,c2,newstate)->{
+                if (checkSet.add(newstate))
+                {
+                    togo.add(newstate);
+                }
+            });
+        }
+        return checkSet.size();
+    }
+    
+    void _checkDfa(DfaState<?> start, String resource, boolean doStdout) throws Exception
     {
         String have;
         {
@@ -27,11 +51,11 @@ public class TestBase
             System.out.print(have);
             System.out.flush();
         }
-        String want = readResource(resource);
+        String want = _readResource(resource);
         Assert.assertEquals(want, have);
     }
     
-    String readResource(String resource) throws Exception
+    String _readResource(String resource) throws Exception
     {
         String pkg = getClass().getPackage().getName().replace('.', '/');
         InputStream instream = getClass().getClassLoader().getResourceAsStream(pkg+"/"+resource);

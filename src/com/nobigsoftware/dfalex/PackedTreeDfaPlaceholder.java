@@ -172,12 +172,6 @@ class PackedTreeDfaPlaceholder<MATCH> extends DfaStatePlaceholder<MATCH>
 		private final DfaStateImpl<?>[] m_targetStates;
 		private final M m_match;
 		
-		/**
-		 * Create a new StateImpl.
-		 * @param internalNodes
-		 * @param targetStates
-		 * @param match
-		 */
 		StateImpl(char[] internalNodes, DfaStateImpl<?>[] targetStates,
 				M match)
 		{
@@ -222,5 +216,64 @@ class PackedTreeDfaPlaceholder<MATCH> extends DfaStatePlaceholder<MATCH>
 		{
 			return m_match;
 		}
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public void enumerateTransitions(DfaTransitionConsumer<M> consumer)
+        {
+            if (m_internalNodes.length<1)
+            {
+                if (m_targetStates[0]!=null)
+                {
+                    consumer.acceptTransition('\0', Character.MAX_VALUE,(DfaState<M>)m_targetStates[0]);
+                }
+                return;
+            }
+            int lastinternal = _enumInternal(consumer, 0,-1);
+            char lastc = m_internalNodes[lastinternal];
+            if (lastc >= Character.MAX_VALUE)
+            {
+                return;
+            }
+            DfaState<?> state = m_targetStates[lastinternal*2 + 2 - m_internalNodes.length];
+            if (state != null)
+            {
+                consumer.acceptTransition(lastc, Character.MAX_VALUE, (DfaState<M>)state);
+            }
+        }
+        
+        @SuppressWarnings("unchecked")
+        public int _enumInternal(final DfaTransitionConsumer<M> consumer, final int target, int previnternal)
+        {
+            int child = target*2+1; //left child of target
+            if (child < m_internalNodes.length)
+            {
+                previnternal = _enumInternal(consumer, child, previnternal);
+            }
+            DfaState<?> state;
+            int cfrom = (previnternal < 0 ? 0 : m_internalNodes[previnternal]);
+            int cto = ((int)m_internalNodes[target])-1;
+            //between adjacent internal nodes is a leaf
+            if (previnternal > target)
+            {
+                state = m_targetStates[previnternal*2 + 2 - m_internalNodes.length];
+            }
+            else
+            {
+                state = m_targetStates[target*2 + 1 - m_internalNodes.length];
+            }
+            if (state != null && cfrom<=cto)
+            {
+                consumer.acceptTransition((char)cfrom, (char)cto, (DfaState<M>) state);
+            }
+            previnternal = target;
+            ++child; // right child of target 
+            if (child < m_internalNodes.length)
+            {
+                previnternal = _enumInternal(consumer, child, previnternal);
+            }
+            return previnternal;
+        }
+		
 	}
 }

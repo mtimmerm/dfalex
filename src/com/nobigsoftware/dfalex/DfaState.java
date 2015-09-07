@@ -38,4 +38,11 @@ public abstract class DfaState<MATCHRESULT>
 	 *     null.
 	 */
 	public abstract MATCHRESULT getMatch();
+	
+	/**
+	 * Enumerate all the transitions out of this state
+	 * 
+	 * @param consumer each DFA transition will be sent here
+	 */
+	public abstract void enumerateTransitions(DfaTransitionConsumer<MATCHRESULT> consumer);
 }

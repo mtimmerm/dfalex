@@ -19,7 +19,7 @@ import java.util.Arrays;
 
 /**
  * A CharRange is a {@link Pattern} that matches a single character from some set or
- * range of characters characters.  It regular expressions, such a patter is written
+ * range of characters.  In regular expressions, such a pattern is written
  * with [ ...stuff... ]
  * <P>
  * Several commonly used ranges are provided as constants (e.g., {@link #DIGITS}) and
@@ -241,7 +241,7 @@ public class CharRange extends Pattern
     }
 
     /**
-     * Instances of this class are used to incrementally build CharRanges
+     * Instances of this class are used to incrementally build {@link CharRange}s
      * <P>
      * Initially it contains an empty set of matching characters (CharRange.NONE).
      * Methods like addChars, addRange, exclude, etc. are called to add and remove characters

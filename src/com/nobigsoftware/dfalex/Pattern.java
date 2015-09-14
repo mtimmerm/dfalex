@@ -47,7 +47,7 @@ public abstract class Pattern implements Serializable
     /**
      * Pattern that matches an optional sign, followed by one or more decimal digits
      */
-    public static final Pattern INTEGER = maybe(anyOf("+-")).then(DIGITS);
+    public static final Pattern INTEGER = maybe(anyCharIn("+-")).then(DIGITS);
     
     /**
      * A pattern that matches an {@link #INTEGER}, optionally followed by a '.' and zero or more digits
@@ -251,12 +251,52 @@ public abstract class Pattern implements Serializable
 	}
 
     /**
+     * Create a pattern that matches any of the given strings
+     * 
+     * @param p0 first possible string
+     * @param p1 second possible string
+     * @param strings remaining possible strings, if any
+     * @return the new pattern
+     */
+    public static Pattern anyOf(String p0, String p1, String...strings)
+    {
+        Pattern[] patterns = new Pattern[strings.length+2];
+        patterns[0] = match(p0);
+        patterns[1] = match(p1);
+        for (int i=1; i<strings.length; ++i)
+        {
+            patterns[i+2] = match(strings[i]);
+        }
+        return new UnionPattern(patterns);
+    }
+
+    /**
+     * Create a pattern that matches any of the given strings, case independent
+     * 
+     * @param p0 first possible string
+     * @param p1 second possible string
+     * @param strings remaining possible strings, if any
+     * @return the new pattern
+     */
+    public static Pattern anyOfI(String p0, String p1, String...strings)
+    {
+        Pattern[] patterns = new Pattern[strings.length+2];
+        patterns[0] = matchI(p0);
+        patterns[1] = matchI(p1);
+        for (int i=1; i<strings.length; ++i)
+        {
+            patterns[i+2] = matchI(strings[i]);
+        }
+        return new UnionPattern(patterns);
+    }
+
+    /**
      * Create a pattern that matches any single character from the given string
      * 
      * @param chars the characters to accept
      * @return the new pattern
      */
-    public static Pattern anyOf(String chars)
+    public static Pattern anyCharIn(String chars)
     {
         return CharRange.builder().addChars(chars).build();
     }

@@ -339,7 +339,7 @@ public class CharRange implements Matchable
 
         /**
          * Add a character to the current set
-         * @param char  This character will be added to the set
+         * @param c  This character will be added to the set
          * @return this
          */
         public Builder addChar(char c)

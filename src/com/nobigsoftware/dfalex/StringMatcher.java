@@ -247,6 +247,7 @@ public class StringMatcher
     /**
      * See if a whole string matches a DFA
      * 
+     * @param <MATCHRESULT> the type of results produced by the DFA  
      * @param state  DFA start state
      * @param str string to test
      * @return If the whole string matches the DFA, this is the match result produced.  Otherwise null.

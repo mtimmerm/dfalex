@@ -15,8 +15,8 @@
  */
 package com.nobigsoftware.dfalex;
 
-import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * A Pattern represents a set of strings.  A string in the set is said to
@@ -25,24 +25,27 @@ import java.util.Arrays;
  * Methods are provided here for building up patterns from smaller ones,
  * like regular expressions.
  * <P>
+ * The {@link #regex(String)}, {@link #regexI(String)}, {@link #thenRegex(String)},
+ * and {@link #thenRegexI(String)} methods can be used to parse regular expression
+ * syntax into patterns.  See {@link RegexParser} for syntax information
+ * <P>
  * In DFALex, the only requirement for a pattern is that it can add itself to an
  * {@link Nfa} so we can make matchers with it.
  */
-public abstract class Pattern implements Serializable
+public abstract class Pattern implements Matchable
 {
     private static final long serialVersionUID = 1L;
     
+    public static final Pattern EMPTY = new EmptyPattern();
     /**
      * Pattern that matches one or more decimal digits
      */
-    //Can't use CharRange statics -- not initialized yet
-    public static final Pattern DIGITS = repeat(new CharRange('0','9'));
+    public static final Pattern DIGITS = repeat(CharRange.DIGITS);
     
     /**
      * Pattern that matches one or more hexadecimal digits
      */
-    //Can't use CharRange statics -- not initialized yet
-    public static final Pattern HEXDIGITS = repeat(CharRange.builder().addRange('0', '9').addRange('a','f').addRange('A','F').build());
+    public static final Pattern HEXDIGITS = repeat(CharRange.HEXDIGITS);
     
     /**
      * Pattern that matches an optional sign, followed by one or more decimal digits
@@ -126,27 +129,54 @@ public abstract class Pattern implements Serializable
         return new StringIPattern(tomatch);
     }
     
-	/**
-	 * Create a pattern that matches all single characters with a range of values
-	 * <P>
-	 * The pattern will match a character c if from &lt;= c &lt;= to.
-	 * 
-	 * @param from inclusive lower bound 
-	 * @param to inclusive upper bound
-	 * @return the pattern that matches the range
-	 */
-	public static Pattern range(char from, char to)
-	{
-	    return new CharRange(from, to);
-	}
-	
+    /**
+     * Get a Pattern corresponding to a {@link CharRange} or other {@link Matchable}
+     * 
+     * @param tomatch pattern to match
+     * @return a Pattern that matches the given {@link Matchable}
+     */
+    public static Pattern match(Matchable tomatch)
+    {
+        if (tomatch instanceof Pattern)
+        {
+            return (Pattern)tomatch;
+        }
+        return new WrapPattern(tomatch);
+    }
+    
+    /**
+     * Parse the given regular expression into a pattern.
+     * <P>
+     * See {@link RegexParser} for syntax information
+     * 
+     * @param regex regular expression string to parse
+     * @return a pattern that implements the regular expression
+     */
+    public static Pattern regex(String regex)
+    {
+        return match(RegexParser.parse(regex, false));
+    }
+    
+    /**
+     * Parse the given regular expression into a pattern, case independent
+     * <P>
+     * See {@link RegexParser} for syntax information
+     * 
+     * @param regex regular expression string to parse
+     * @return a pattern that implements the regular expression
+     */
+    public static Pattern regexI(String regex)
+    {
+        return match(RegexParser.parse(regex, true));
+    }
+    
 	/**
 	 * Create a pattern that matches one or more occurrences of a given pattern
 	 * 
 	 * @param pat  given pattern
 	 * @return the new pattern
 	 */
-	public static Pattern repeat(Pattern pat)
+	public static Pattern repeat(Matchable pat)
 	{
 		return new RepeatingPattern(pat, true);
 	}
@@ -179,7 +209,7 @@ public abstract class Pattern implements Serializable
      * @param pat  given pattern
      * @return the new pattern
      */
-	public static Pattern maybe(Pattern pat)
+	public static Pattern maybe(Matchable pat)
 	{
 		return new OptionalPattern(pat);
 	}
@@ -212,7 +242,7 @@ public abstract class Pattern implements Serializable
      * @param pat  given pattern
      * @return the new pattern
      */
-	public static Pattern maybeRepeat(Pattern pat)
+	public static Pattern maybeRepeat(Matchable pat)
 	{
 		return new RepeatingPattern(pat, false);
 	}
@@ -245,10 +275,21 @@ public abstract class Pattern implements Serializable
      * @param patterns patterns to accept
      * @return the new pattern
      */
-	public static Pattern anyOf(Pattern...patterns)
+	public static Pattern anyOf(Matchable...patterns)
 	{
 		return new UnionPattern(patterns);
 	}
+
+    /**
+     * Create a pattern that matches any of the given patterns
+     * 
+     * @param patterns patterns to accept
+     * @return the new pattern
+     */
+    public static Pattern anyOf(Collection<? extends Matchable> patterns)
+    {
+        return new UnionPattern(patterns.toArray(new Matchable[patterns.size()]));
+    }
 
     /**
      * Create a pattern that matches any of the given strings
@@ -298,22 +339,22 @@ public abstract class Pattern implements Serializable
      */
     public static Pattern anyCharIn(String chars)
     {
-        return CharRange.builder().addChars(chars).build();
+        return match(CharRange.builder().addChars(chars).build());
     }
 
 	/**
-	 * Create a pattern that strings from this pattern, followed by strings from the given pattern
+	 * Create a pattern that matches strings from this pattern, followed by strings from the given pattern
 	 * 
 	 * @param tocat    pattern to append to this one
 	 * @return the new pattern
 	 */
-	public Pattern then(Pattern tocat)
+	public Pattern then(Matchable tocat)
 	{
 		return new CatPattern(this, tocat);
 	}
 	
     /**
-     * Create a pattern that strings from this pattern, followed by a given string, case dependent
+     * Create a pattern that matches strings from this pattern, followed by a given string, case dependent
      * 
      * @param str  string to append to this pattern
      * @return the new pattern
@@ -324,7 +365,7 @@ public abstract class Pattern implements Serializable
 	}
 
     /**
-     * Create a pattern that strings from this pattern, followed by a given string, case independent
+     * Create a pattern that matches strings from this pattern, followed by a given string, case independent
      * 
      * @param str  string to append to this pattern
      * @return the new pattern
@@ -335,13 +376,37 @@ public abstract class Pattern implements Serializable
     }
 
     /**
+     * Create a pattern that matches strings from this pattern,
+     * followed by strings that match a regular expression, case dependent
+     * 
+     * @param regexStr  regular expression to append to this pattern
+     * @return the new pattern
+     */
+    public Pattern thenRegex(String regexStr)
+    {
+        return then(regex(regexStr));
+    }
+
+    /**
+     * Create a pattern that matches strings from this pattern,
+     * followed by strings that match a regular expression, case independent
+     * 
+     * @param regexStr  regular expression to append to this pattern
+     * @return the new pattern
+     */
+    public Pattern thenRegexI(String regexStr)
+    {
+        return then(regexI(regexStr));
+    }
+
+    /**
      * Create a pattern that matches strings from this pattern, followed by one
      * or more occurrences of a given pattern
      * 
 	 * @param pat the given pattern
 	 * @return the new pattern
 	 */
-	public Pattern thenRepeat(Pattern pat)
+	public Pattern thenRepeat(Matchable pat)
 	{
 		return then(repeat(pat));
 	}
@@ -377,7 +442,7 @@ public abstract class Pattern implements Serializable
      * @param pat the given pattern
      * @return the new pattern
      */
-	public Pattern thenMaybe(Pattern pat)
+	public Pattern thenMaybe(Matchable pat)
 	{
 		return then(maybe(pat));
 	}
@@ -413,7 +478,7 @@ public abstract class Pattern implements Serializable
      * @param pat the given pattern
      * @return the new pattern
      */
-	public Pattern thenMaybeRepeat(Pattern pat)
+	public Pattern thenMaybeRepeat(Matchable pat)
 	{
 		return then(maybeRepeat(pat));
 	}
@@ -441,37 +506,15 @@ public abstract class Pattern implements Serializable
     {
         return then(maybeRepeatI(str));
     }
-
-	/**
-	 * Add the pattern to an NFA
-	 * <P>
-	 * New states will be created in the NFA to match the pattern and transition to
-	 * the given targetState.
-	 * <P>
-	 * NO NEW TRANSITIONS will be added to the target state or any other pre-existing state
-	 * 
-	 * @param nfa	nfa to add to
-	 * @param targetState target state after the pattern is matched
-	 * @return a state that transitions to targetState after matching the pattern, and
-	 * 		only after matching the pattern.  This may be targetState if the pattern is an
-	 * 		empty string.
-	 */
-	public abstract int addToNFA(Nfa<?> nfa, int targetState);
-	
-	
-	/**
-	 * @return true if this pattern matches the empty string
-	 */
-	public abstract boolean matchesEmpty();
 	
 	private static class CatPattern extends Pattern
 	{
         private static final long serialVersionUID = 1L;
         
-        private final Pattern m_first, m_then;
+        private final Matchable m_first, m_then;
 		private final boolean m_matchesEmpty;
 		
-		CatPattern(Pattern first, Pattern then)
+		CatPattern(Matchable first, Matchable then)
 		{
 			m_first = first;
 			m_then = then;
@@ -492,6 +535,57 @@ public abstract class Pattern implements Serializable
 			return m_matchesEmpty;
 		}
 	}
+    private static class WrapPattern extends Pattern
+    {
+        private static final long serialVersionUID = 1L;
+        
+        private final Matchable m_tomatch;
+        
+        WrapPattern(Matchable tomatch)
+        {
+            m_tomatch = tomatch;
+        }
+        
+        @Override
+        public int addToNFA(Nfa<?> nfa, int targetState)
+        {
+            return m_tomatch.addToNFA(nfa, targetState);
+        }
+        
+        @Override
+        public boolean matchesEmpty()
+        {
+            return m_tomatch.matchesEmpty();
+        }
+    }
+    
+    private static class EmptyPattern extends Pattern
+    {
+        private static final long serialVersionUID = 1L;
+        
+        EmptyPattern()
+        {
+        }
+        
+        @Override
+        public int addToNFA(Nfa<?> nfa, int targetState)
+        {
+            return targetState;
+        }
+        
+        @Override
+        public boolean matchesEmpty()
+        {
+            return true;
+        }
+
+        @Override
+        public Pattern then(Matchable tocat)
+        {
+            return match(tocat);
+        }
+        
+    }
 	private static class StringPattern extends Pattern
 	{
         private static final long serialVersionUID = 1L;
@@ -566,10 +660,10 @@ public abstract class Pattern implements Serializable
 	{
         private static final long serialVersionUID = 1L;
         
-        private final Pattern m_pattern;
+        private final Matchable m_pattern;
 		private boolean m_needAtLeastOne;
 
-		RepeatingPattern(Pattern pattern, boolean needAtLeastOne)
+		RepeatingPattern(Matchable pattern, boolean needAtLeastOne)
 		{
 			m_pattern = pattern;
 			m_needAtLeastOne = needAtLeastOne;
@@ -602,9 +696,9 @@ public abstract class Pattern implements Serializable
 	{
         private static final long serialVersionUID = 1L;
         
-        private final Pattern m_pattern;
+        private final Matchable m_pattern;
 
-		OptionalPattern(Pattern pattern)
+		OptionalPattern(Matchable pattern)
 		{
 			m_pattern = pattern;
 		}
@@ -633,14 +727,14 @@ public abstract class Pattern implements Serializable
 	{
         private static final long serialVersionUID = 1L;
         
-        private final Pattern[] m_choices;
+        private final Matchable[] m_choices;
 		private final boolean m_matchesEmpty;
 		
-		UnionPattern(Pattern[] choices)
+		UnionPattern(Matchable[] choices)
 		{
 			m_choices = Arrays.copyOf(choices, choices.length);
 			boolean matchesEmpty = false;
-			for (Pattern pat : choices)
+			for (Matchable pat : choices)
 			{
 				if (pat.matchesEmpty())
 				{
@@ -655,7 +749,7 @@ public abstract class Pattern implements Serializable
 		public int addToNFA(Nfa<?> nfa, int targetState)
 		{
 			int startState = nfa.addState(null);
-			for (Pattern pat : m_choices)
+			for (Matchable pat : m_choices)
 			{
 				nfa.addEpsilon(startState, pat.addToNFA(nfa, targetState));
 			}

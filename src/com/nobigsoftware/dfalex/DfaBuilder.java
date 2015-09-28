@@ -63,7 +63,7 @@ import com.nobigsoftware.util.SHAOutputStream;
 public class DfaBuilder<MATCHRESULT extends Serializable>
 {
     private final BuilderCache m_cache;
-	private final Map<MATCHRESULT, List<Pattern>> m_patterns = new LinkedHashMap<>();
+	private final Map<MATCHRESULT, List<Matchable>> m_patterns = new LinkedHashMap<>();
 	
 	/**
 	 * Create a new DfaBuilder without a {@link BuilderCache}
@@ -91,9 +91,9 @@ public class DfaBuilder<MATCHRESULT extends Serializable>
 	    m_patterns.clear();
 	}
 	
-	public void addPattern(Pattern pat, MATCHRESULT accept)
+	public void addPattern(Matchable pat, MATCHRESULT accept)
 	{
-		List<Pattern> patlist = m_patterns.computeIfAbsent(accept, x -> new ArrayList<>());
+		List<Matchable> patlist = m_patterns.computeIfAbsent(accept, x -> new ArrayList<>());
 		patlist.add(pat);
 	}
 	
@@ -173,10 +173,10 @@ public class DfaBuilder<MATCHRESULT extends Serializable>
                 os.writeInt(numLangs);
                 
                 //write key stuff out in an order based on our LinkedHashMap, for deterministic serialization
-                for (Entry<MATCHRESULT, List<Pattern>> patEntry : m_patterns.entrySet())
+                for (Entry<MATCHRESULT, List<Matchable>> patEntry : m_patterns.entrySet())
                 {
                     boolean included = false;
-                    List<Pattern> patList = patEntry.getValue();
+                    List<Matchable> patList = patEntry.getValue();
                     if (patList.isEmpty())
                     {
                         continue;
@@ -212,7 +212,7 @@ public class DfaBuilder<MATCHRESULT extends Serializable>
                         }
                         os.writeInt(bits);
                     }
-                    for (Pattern pat : patList)
+                    for (Matchable pat : patList)
                     {
                         os.writeObject(pat);
                     }
@@ -256,9 +256,9 @@ public class DfaBuilder<MATCHRESULT extends Serializable>
 			ambiguityResolver = DfaBuilder::defaultAmbiguityResolver;
 		}
 		
-		for (Entry<MATCHRESULT, List<Pattern>> patEntry : m_patterns.entrySet())
+		for (Entry<MATCHRESULT, List<Matchable>> patEntry : m_patterns.entrySet())
 		{
-			List<Pattern> patList = patEntry.getValue();
+			List<Matchable> patList = patEntry.getValue();
 			if (patList == null || patList.size()<1)
 			{
 				continue;
@@ -277,7 +277,7 @@ public class DfaBuilder<MATCHRESULT extends Serializable>
 					{
 					    //we have multiple patterns.  Make a union
 						matchState = nfa.addState(null);
-						for (Pattern pat : patList)
+						for (Matchable pat : patList)
 						{
 							nfa.addEpsilon(matchState, pat.addToNFA(nfa, acceptState));
 						}

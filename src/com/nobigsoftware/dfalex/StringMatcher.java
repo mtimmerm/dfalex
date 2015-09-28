@@ -115,7 +115,21 @@ public class StringMatcher
      */
     public int getCurrentMatchEnd()
     {
-        return m_currentStart;
+        return m_currentEnd;
+    }
+    
+    /**
+     * Get the last successful matching substring, or "" if there isn't one.
+     * 
+     * @return  The last successful matching string or empty.
+     */
+    public String getCurrentMatch()
+    {
+        if (m_currentEnd <= m_currentStart)
+        {
+            return "";
+        }
+        return m_src.substring(m_currentStart, m_currentEnd);
     }
 
     /**

@@ -138,32 +138,25 @@ public enum JavaToken {
         .then("\'")
     ),
     
-    INTEGER_LITERAL(
-        anyOf("+-").then(anyOf(
-            match("0"),
-            range('1','9').thenMaybeRepeat(CharRange.DIGITS),
-            match("0").thenRepeat(CharRange.OCTALDIGITS),
-            match("0").then(anyOf("xX")).thenRepeat(CharRange.HEXDIGITS)
-        ))
-    ),
+    INTEGER_LITERAL(regex("[+\\-](0|[1-9][0-9]*|0[0-7]+|0[xX][0-9a-fA-F]+)")),
         
     LONG_LITERAL(
-        INTEGER_LITERAL.m_pattern.then(anyOf("lL"))
+        INTEGER_LITERAL.m_pattern.then(anyCharIn("lL"))
     ),
             
     DOUBLE_LITERAL(
-        anyOf("+-").then(anyOf(
+        anyCharIn("+-").then(anyOf(
              SubPatterns.DIGITS_WITH_DECIMAL.thenMaybe(SubPatterns.EXPONENT),
              repeat(CharRange.DIGITS).then(SubPatterns.EXPONENT)
         ))
-        .thenMaybe(anyOf("dD"))
+        .thenMaybe(anyCharIn("dD"))
     ),
     FLOAT_LITERAL(
-        anyOf("+-").then(anyOf(
+        anyCharIn("+-").then(anyOf(
              SubPatterns.DIGITS_WITH_DECIMAL.thenMaybe(SubPatterns.EXPONENT),
              repeat(CharRange.DIGITS).then(SubPatterns.EXPONENT)
         ))
-        .then(anyOf("fF"))
+        .then(anyCharIn("fF"))
     );
 
     final Pattern m_pattern;
@@ -184,14 +177,14 @@ public enum JavaToken {
     
     private static class SubPatterns
     {
-        static final Pattern STRING_ESCAPE = match("\\").then(anyOf( //escapes
-            anyOf("btnfr\"\'\\"), //single char escapes
-            maybe(range('0','3')).thenMaybe(CharRange.OCTALDIGITS).then(CharRange.OCTALDIGITS) //octal escape
+        static final Matchable STRING_ESCAPE = match("\\").then(anyOf( //escapes
+            anyCharIn("btnfr\"\'\\"), //single char escapes
+            regex("[0-3]?[0-7]?[0-7]") //octal escape
         ));
         static final Pattern DIGITS_WITH_DECIMAL = anyOf(
             repeat(CharRange.DIGITS).then(".").thenMaybeRepeat(CharRange.DIGITS),
             match(".").thenRepeat(CharRange.DIGITS)
         );
-        static final Pattern EXPONENT = anyOf("eE").then(anyOf("+-")).thenRepeat(CharRange.DIGITS);
+        static final Pattern EXPONENT = anyCharIn("eE").then(anyCharIn("+-")).thenRepeat(CharRange.DIGITS);
     }
 }

@@ -25,7 +25,7 @@ import java.util.Arrays;
  * Several commonly used ranges are provided as constants (e.g., {@link #DIGITS}) and
  * the {@link Builder} class can be used to construct simple and complex ranges. 
  */
-public class CharRange extends Pattern
+public class CharRange implements Matchable
 {
     private static final long serialVersionUID = 1L;
 
@@ -88,7 +88,7 @@ public class CharRange extends Pattern
     public static final CharRange JAVA_ID_CHAR = builder().addRange(JAVA_LETTER).addRange(DIGITS).build();
 
     // characers in here are in value order and are unique
-    // a character c is in this CharRange iff m_bounds contains an EVEN number of
+    // a character c is in this CharRange iff m_bounds contains an ODD number of
     // characters <= c
     private final char[] m_bounds;
 
@@ -116,6 +116,29 @@ public class CharRange extends Pattern
         }
     }
 
+    /**
+     * Check whether or not this range contains a character c
+     * @param c character to test
+     * @return true iff this CharRange contains c
+     */
+    public boolean contains(char c)
+    {
+        int lo = 0, hi = m_bounds.length;
+        while (hi > lo)
+        {
+            int test = lo+((hi-lo)>>1);
+            if (m_bounds[test]<=c)
+            {
+              lo = test+1;  
+            }
+            else
+            {
+                hi=test;
+            }
+        }
+        return ((lo&1)!=0);
+    }
+    
     /**
      * Return a new CharRange that matches the characters that this one does not match.
      * @return  the complement of this CharRange
@@ -204,6 +227,31 @@ public class CharRange extends Pattern
     
     
     /**
+     * Create a pattern that matches a single character
+     * 
+     * @param c character to match
+     * @return the pattern that matches the character
+     */
+    public static CharRange single(char c)
+    {
+        return new CharRange(c,c);
+    }
+    
+    /**
+     * Create a pattern that matches all single characters with a range of values
+     * <P>
+     * The pattern will match a character c if from &lt;= c &lt;= to.
+     * 
+     * @param from inclusive lower bound 
+     * @param to inclusive upper bound
+     * @return the pattern that matches the range
+     */
+    public static Matchable range(char from, char to)
+    {
+        return new CharRange(from, to);
+    }
+    
+    /**
      * Create a CharRange that matches any of the characters in the given string
      * @param chars characters to match
      * @return the new CharRange, or NONE if that's appropriate
@@ -289,6 +337,17 @@ public class CharRange extends Pattern
             return this;
         }
 
+        /**
+         * Add a character to the current set
+         * @param char  This character will be added to the set
+         * @return this
+         */
+        public Builder addChar(char c)
+        {
+            addRange(c,c);
+            return this;
+        }
+        
         /**
          * Add characters to the current set
          * @param chars  All characters in this string will be added to the set
@@ -378,6 +437,28 @@ public class CharRange extends Pattern
         }
 
         /**
+         * Make the current range case independent.
+         * <P>
+         * For every char c in the range, Character.toUpperCase(c) and
+         * Character.toLowerCase(c) are added.
+         * 
+         * @return this
+         */
+        public Builder expandCases()
+        {
+            _normalize();
+            final int len = m_size;
+            int[] src = Arrays.copyOf(m_inouts, len);
+            for (int i=0; i<src.length; i+=2)
+            {
+                char s = (char) (src[i] >> 1);
+                char e = (i+1 >= len ? Character.MAX_VALUE : (char)( (src[i+1]>>1) -1 ));
+                RangeDecaser.expandRange(s, e, this);
+            }
+            return this;
+        }
+
+        /**
          * Invert the current set
          * <P>
          * When this returns the current set will include only those characters that were NOT in the set before the call.
@@ -415,7 +496,7 @@ public class CharRange extends Pattern
             }
             return this;
         }
-
+        
         /**
          * Produce a CharRange for the current set
          * <P>
@@ -491,6 +572,116 @@ public class CharRange extends Pattern
                 m_inouts = Arrays.copyOf(m_inouts,
                         Math.max(m_inouts.length * 2, m_size + n));
             }
+        }
+    }
+    
+    //helper class for calculating case-independent character ranges
+    //We make this a separate class to defer its initialization until the first time we use it
+    private static class RangeDecaser
+    {
+        //contains quads of characters s,e,lcdelta,ucdelta, where:
+        //s and e define an inclusive range of contiguous characters
+        //lcdelta and ucdelta define the deltas to the lower case and upper case versions of characters in the range
+        static char[] s_deltaTable = _buildDeltaTable();
+        
+        static void expandRange(final char s, final char e, Builder target)
+        {
+            final int tableSize = s_deltaTable.length>>2;
+            int lo=0;
+            int hi=1;
+            //finger search to find the first range with an end >= s
+            while(s_deltaTable[(hi<<2)+1] < s)
+            {
+                //hi is too lo
+                lo=hi+1;
+                hi<<=1;
+                if (hi >= tableSize)
+                {
+                    hi = tableSize;
+                    break;
+                }
+            }
+            while(hi > lo)
+            {
+                int test = lo + ((hi-lo)>>1);
+                if (s_deltaTable[(test<<2)+1] < s)
+                {
+                    lo = test+1;
+                }
+                else
+                {
+                    hi = test;
+                }
+            }
+            for (;lo < tableSize;++lo)
+            {
+                char subs = s_deltaTable[lo<<2];
+                char sube = s_deltaTable[(lo<<2)+1];
+                if (subs > e)
+                {
+                    break;
+                }
+                if (s > subs)
+                {
+                    subs = s;
+                }
+                if (e < sube)
+                {
+                    sube = e;
+                }
+                if (sube<subs)
+                {
+                    continue;
+                }
+                char delta = s_deltaTable[(lo<<2)+2];
+                if (delta != '\0')
+                {
+                    target.addRange((char)((subs + delta)&65535), (char)((sube + delta)&65535));
+                }
+                delta = s_deltaTable[(lo<<2)+3];
+                if (delta != '\0')
+                {
+                    target.addRange((char)((subs + delta)&65535), (char)((sube + delta)&65535));
+                }
+            }
+        }
+       
+        
+        private static char[] _buildDeltaTable()
+        {
+            int s=0;
+            int dpos=0;
+            char[] ar = new char[256];
+            while(s<65536)
+            {
+                int lcd = Character.toLowerCase(s)-s;
+                int ucd = Character.toUpperCase(s)-s;
+                if (lcd == 0 && ucd == 0)
+                {
+                    ++s;
+                    continue;
+                }
+                int e = s+1;
+                for (;e<65536;++e)
+                {
+                    int lcd2 = Character.toLowerCase(e)-e;
+                    int ucd2 = Character.toUpperCase(e)-e;
+                    if (lcd2 != lcd || ucd2!=ucd)
+                    {
+                        break;
+                    }
+                }
+                while (dpos+4 > ar.length)
+                {
+                    ar = Arrays.copyOf(ar, ar.length*2);
+                }
+                ar[dpos++] = (char)s;
+                ar[dpos++] = (char)(e-1);
+                ar[dpos++] = (char)(lcd&65535);
+                ar[dpos++] = (char)(ucd&65535);
+                s=e;
+            }
+            return Arrays.copyOf(ar, dpos);
         }
     }
 }

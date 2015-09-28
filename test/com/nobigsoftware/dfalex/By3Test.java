@@ -18,9 +18,9 @@ public class By3Test extends TestBase
         //make pattern for whole numbers divisible by 3
         
         //digits mod 3
-        Pattern d0=CharRange.anyOf("0369");
-        Pattern d1=CharRange.anyOf("147").thenMaybeRepeat(d0);
-        Pattern d2=CharRange.anyOf("258").thenMaybeRepeat(d0);
+        Matchable d0=CharRange.anyOf("0369");
+        Pattern d1=Pattern.match(CharRange.anyOf("147")).thenMaybeRepeat(d0);
+        Pattern d2=Pattern.match(CharRange.anyOf("258")).thenMaybeRepeat(d0);
         
         Pattern Plus2 = Pattern.maybeRepeat(d1.then(d2)).then(Pattern.anyOf(
                 d1.then(d1),

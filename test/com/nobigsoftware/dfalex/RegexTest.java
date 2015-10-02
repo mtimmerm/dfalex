@@ -17,7 +17,6 @@ package com.nobigsoftware.dfalex;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Collections;
 
 import org.junit.Assert;
 import org.junit.Test;

@@ -38,20 +38,21 @@ class SerializableDfa<RESULT> implements Serializable
 		{
 			m_dfaStates.add(new PackedTreeDfaPlaceholder<>(rawDfa, m_dfaStates.size()));
 		}
-		for (int i=0;i<len;++i)
-		{
-			m_dfaStates.get(i).createDelegate(m_dfaStates);
-		}
-		for (int i=0;i<len;++i)
-		{
-			m_dfaStates.get(i).fixPlaceholderReferences();
-		}
 	}
 	
 	public synchronized List<DfaState<RESULT>> getStartStates()
 	{
 		if (m_startStatesMemo == null)
 		{
+	        final int len = m_dfaStates.size();
+	        for (int i=0;i<len;++i)
+	        {
+	            m_dfaStates.get(i).createDelegate(m_dfaStates);
+	        }
+	        for (int i=0;i<len;++i)
+	        {
+	            m_dfaStates.get(i).fixPlaceholderReferences();
+	        }
 			m_startStatesMemo = new ArrayList<>(m_startStateNumbers.length);
 			for (int startState : m_startStateNumbers)
 			{

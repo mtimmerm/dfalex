@@ -6,7 +6,6 @@ import org.junit.Test;
 
 public class JavaTest extends TestBase
 {
-    final PrettyPrinter m_printer = new PrettyPrinter();
     @Test
     public void test() throws Exception
     {

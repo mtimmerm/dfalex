@@ -241,7 +241,7 @@ public class DfaBuilder<MATCHRESULT extends Serializable>
     }
     
     
-	public SerializableDfa<MATCHRESULT> _build(List<Set<MATCHRESULT>> languages, DfaAmbiguityResolver<MATCHRESULT> ambiguityResolver)
+	private SerializableDfa<MATCHRESULT> _build(List<Set<MATCHRESULT>> languages, DfaAmbiguityResolver<MATCHRESULT> ambiguityResolver)
 	{
 		Nfa<MATCHRESULT> nfa = new Nfa<>();
 		

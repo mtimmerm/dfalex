@@ -41,8 +41,8 @@ public class StringMatcher
 {
     private static final int NMM_SIZE = 40;
     private final String m_src;
-    private int m_currentStart = 0;
-    private int m_currentEnd = 0;
+    private int m_lastMatchStart = 0;
+    private int m_lastMatchEnd = 0;
     private int m_limit;
     
     //non-matching memo
@@ -82,8 +82,8 @@ public class StringMatcher
         {
             throw new IndexOutOfBoundsException("Invalid positions in StringMatcher.setPositions");
         }
-        m_currentStart = lastMatchStart;
-        m_currentEnd = lastMatchEnd;
+        m_lastMatchStart = lastMatchStart;
+        m_lastMatchEnd = lastMatchEnd;
         m_limit = searchLimit;
         m_nmmStart = NMM_SIZE;
     }
@@ -105,7 +105,7 @@ public class StringMatcher
      */
     public int getLastMatchStart()
     {
-        return m_currentStart;
+        return m_lastMatchStart;
     }
 
     /**
@@ -113,9 +113,9 @@ public class StringMatcher
      * 
      * @return the current LastMatchEnd position
      */
-    public int getCurrentMatchEnd()
+    public int getLastMatchEnd()
     {
-        return m_currentEnd;
+        return m_lastMatchEnd;
     }
     
     /**
@@ -123,13 +123,13 @@ public class StringMatcher
      * 
      * @return  The last successful matching string or empty.
      */
-    public String getCurrentMatch()
+    public String getLastMatch()
     {
-        if (m_currentEnd <= m_currentStart)
+        if (m_lastMatchEnd <= m_lastMatchStart)
         {
             return "";
         }
-        return m_src.substring(m_currentStart, m_currentEnd);
+        return m_src.substring(m_lastMatchStart, m_lastMatchEnd);
     }
 
     /**
@@ -150,7 +150,7 @@ public class StringMatcher
      */
     public <MATCHRESULT> MATCHRESULT findNext(DfaState<MATCHRESULT> state)
     {
-        for (int pos = m_currentEnd; pos < m_limit; ++pos)
+        for (int pos = m_lastMatchEnd; pos < m_limit; ++pos)
         {
             MATCHRESULT ret=matchAt(state, pos);
             if (ret!=null)
@@ -194,7 +194,7 @@ public class StringMatcher
             if (match != null)
             {
                 ret = match;
-                m_currentEnd = pos;
+                m_lastMatchEnd = pos;
                 newNmmSize = 0;
                 continue;
             }
@@ -215,8 +215,8 @@ public class StringMatcher
             }
             if (pos >= writeNmmNext && newNmmSize < NMM_SIZE)
             {
-                m_nmmPositions[m_nmmStart] = pos;
-                m_nmmStates[m_nmmStart] = state;
+                m_nmmPositions[newNmmSize] = pos;
+                m_nmmStates[newNmmSize] = state;
                 ++newNmmSize;
                 writeNmmNext = pos+(2<<newNmmSize);
                 if (m_nmmStart < newNmmSize)
@@ -239,7 +239,7 @@ public class StringMatcher
         }
         if (ret != null)
         {
-            m_currentStart = startPos;
+            m_lastMatchStart = startPos;
         }
         return ret;
     }

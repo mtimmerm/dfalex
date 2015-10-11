@@ -15,6 +15,7 @@
  */
 package com.nobigsoftware.dfalex;
 
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -98,7 +99,7 @@ class PackedTreeDfaPlaceholder<MATCH> extends DfaStatePlaceholder<MATCH>
 
 
 	@Override
-	void createDelegate(List<DfaStatePlaceholder<MATCH>> allStates)
+	void createDelegate(int statenum, List<DfaStatePlaceholder<MATCH>> allStates)
 	{
 		DfaStateImpl<?>[] targetStates = new DfaStateImpl<?>[m_targetStateNumbers.length];
 		for (int i=0; i < targetStates.length; ++i)
@@ -106,7 +107,7 @@ class PackedTreeDfaPlaceholder<MATCH> extends DfaStatePlaceholder<MATCH>
 		    int num = m_targetStateNumbers[i];
 			targetStates[i] = (num < 0 ? null : allStates.get(num));
 		}
-		m_delegate = new StateImpl<>(m_internalNodes, targetStates, m_match);
+		m_delegate = new StateImpl<>(m_internalNodes, targetStates, m_match, statenum);
 	}
 	
 	//generate the tree by inorder traversal
@@ -166,19 +167,21 @@ class PackedTreeDfaPlaceholder<MATCH> extends DfaStatePlaceholder<MATCH>
 		}
 	}
 
-	private static class StateImpl<M> extends DfaStateImpl<M>
+	private static class StateImpl<M> extends DfaStateImpl<M> implements Iterable<DfaState<M>>
 	{
 		private final char[] m_internalNodes;
 		private final DfaStateImpl<?>[] m_targetStates;
 		private final M m_match;
+		private final int m_stateNum;
 		
 		StateImpl(char[] internalNodes, DfaStateImpl<?>[] targetStates,
-				M match)
+				M match, int stateNum)
 		{
 			super();
 			m_internalNodes = internalNodes;
 			m_targetStates = targetStates;
 			m_match = match;
+			m_stateNum = stateNum;
 		}
 
 		@Override
@@ -218,6 +221,24 @@ class PackedTreeDfaPlaceholder<MATCH> extends DfaStatePlaceholder<MATCH>
 		}
 
         @Override
+        public int getStateNumber()
+        {
+            return m_stateNum;
+        }
+
+        @Override
+        public Iterable<DfaState<M>> getSuccessorStates()
+        {
+            return this;
+        }
+
+        @Override
+        public Iterator<DfaState<M>> iterator()
+        {
+            return new TransitionArrayIterator<M>(m_targetStates);
+        }
+
+        @Override
         @SuppressWarnings("unchecked")
         public void enumerateTransitions(DfaTransitionConsumer<M> consumer)
         {
@@ -243,7 +264,7 @@ class PackedTreeDfaPlaceholder<MATCH> extends DfaStatePlaceholder<MATCH>
         }
         
         @SuppressWarnings("unchecked")
-        public int _enumInternal(final DfaTransitionConsumer<M> consumer, final int target, int previnternal)
+        private int _enumInternal(final DfaTransitionConsumer<M> consumer, final int target, int previnternal)
         {
             int child = target*2+1; //left child of target
             if (child < m_internalNodes.length)
@@ -274,6 +295,32 @@ class PackedTreeDfaPlaceholder<MATCH> extends DfaStatePlaceholder<MATCH>
             }
             return previnternal;
         }
-		
+	}
+	private static class TransitionArrayIterator<M> implements Iterator<DfaState<M>>
+	{
+	    private final DfaState<?>[] m_array;
+	    private int m_pos;
+	    
+        TransitionArrayIterator(DfaState<?>[] array)
+        {
+            m_array = array;
+            for (m_pos=0; m_pos<m_array.length && m_array[m_pos]==null; ++m_pos);
+        }
+
+        @Override
+        public boolean hasNext()
+        {
+            return (m_pos < m_array.length);
+        }
+
+        @Override
+        public DfaState<M> next()
+        {
+            @SuppressWarnings("unchecked")
+            DfaState<M> ret = (DfaState<M>)m_array[m_pos];
+            for (; m_pos<m_array.length && m_array[m_pos]==null; ++m_pos);
+            return ret;
+        }
+	    
 	}
 }

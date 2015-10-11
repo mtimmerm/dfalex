@@ -47,7 +47,7 @@ class SerializableDfa<RESULT> implements Serializable
 	        final int len = m_dfaStates.size();
 	        for (int i=0;i<len;++i)
 	        {
-	            m_dfaStates.get(i).createDelegate(m_dfaStates);
+	            m_dfaStates.get(i).createDelegate(i, m_dfaStates);
 	        }
 	        for (int i=0;i<len;++i)
 	        {

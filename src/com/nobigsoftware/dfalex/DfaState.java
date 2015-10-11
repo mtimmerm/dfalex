@@ -39,10 +39,32 @@ public abstract class DfaState<MATCHRESULT>
 	 */
 	public abstract MATCHRESULT getMatch();
 	
+	
 	/**
-	 * Enumerate all the transitions out of this state
-	 * 
-	 * @param consumer each DFA transition will be sent here
-	 */
-	public abstract void enumerateTransitions(DfaTransitionConsumer<MATCHRESULT> consumer);
+     * Get the state number.  All states reachable from the output of a single call to
+     * a {@link DfaBuilder} build method will be compactly numbered starting at 0.
+     * <P>
+     * These state numbers can be used to maintain auxiliary information about a DFA.
+     * <P>
+     * See {@link DfaAuxiliaryInformation}
+     * 
+     * @return this state's state number
+     */
+    public abstract int getStateNumber();
+    
+    /**
+     * Enumerate all the transitions out of this state
+     * 
+     * @param consumer each DFA transition will be sent here
+     */
+    public abstract void enumerateTransitions(DfaTransitionConsumer<MATCHRESULT> consumer);
+
+    /**
+     * Get an {@link Iterable} of all the successor states of this state.
+     * <P>
+     * Note that the same successor state may appear more than once in the interation
+     * 
+     * @return an iterable of successor states.
+     */
+    public abstract Iterable<DfaState<MATCHRESULT>> getSuccessorStates();
 }

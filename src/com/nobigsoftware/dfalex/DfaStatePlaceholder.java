@@ -28,19 +28,15 @@ abstract class DfaStatePlaceholder<MATCH> extends DfaStateImpl<MATCH> implements
 {
 	private static final long serialVersionUID = 1L;
 
-	private static EmptyDfaStateImpl<Object> EMPTY_DELEGATE = new EmptyDfaStateImpl<>();
-	
-	protected transient DfaStateImpl<MATCH> m_delegate;
+	protected transient DfaStateImpl<MATCH> m_delegate = null;
 	
 	/**
 	 * Create a new DfaStatePlaceholder
 	 * <P>
 	 * The initially constructed state will accept no strings
 	 */
-	@SuppressWarnings("unchecked")
 	public DfaStatePlaceholder()
 	{
-		 m_delegate = (DfaStateImpl<MATCH>)EMPTY_DELEGATE;
 	}
 
 	/**
@@ -49,7 +45,7 @@ abstract class DfaStatePlaceholder<MATCH> extends DfaStateImpl<MATCH> implements
 	 * <P>
 	 * This is called on all DFA state placeholders after they are constructed
 	 */
-	abstract void createDelegate(List<DfaStatePlaceholder<MATCH>> allStates);
+	abstract void createDelegate(int statenum, List<DfaStatePlaceholder<MATCH>> allStates);
 	
 	@Override
 	final void fixPlaceholderReferences()
@@ -74,9 +70,20 @@ abstract class DfaStatePlaceholder<MATCH> extends DfaStateImpl<MATCH> implements
 		return m_delegate.getMatch();
 	}
     @Override
-    public void enumerateTransitions(DfaTransitionConsumer<MATCH> consumer)
+    final public void enumerateTransitions(DfaTransitionConsumer<MATCH> consumer)
     {
         m_delegate.enumerateTransitions(consumer);
     }
-	
+
+    @Override
+    final public int getStateNumber()
+    {
+        return m_delegate.getStateNumber();
+    }
+
+    @Override
+    public Iterable<DfaState<MATCH>> getSuccessorStates()
+    {
+        return m_delegate.getSuccessorStates();
+    }
 }

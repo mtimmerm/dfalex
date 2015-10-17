@@ -15,7 +15,7 @@
  */
 package com.nobigsoftware.dfalex;
 
-public class PrimeSizeFinder
+class PrimeSizeFinder
 {
 	private final static int[] PRIME_SIZES = new int[] { 5, 7, 9, 11, 17, 23, 29, 37, 47, 59, 79, 101, 127, 163, 211, 269, 337, 421,
 		529, 661, 827, 1039, 1301, 1627, 2039, 2549, 3187, 3989, 4987, 6241, 7817, 9781, 12227, 15287, 19121, 23909, 29917, 37397,

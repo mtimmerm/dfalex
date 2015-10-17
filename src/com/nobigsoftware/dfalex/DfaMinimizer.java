@@ -71,7 +71,7 @@ class DfaMinimizer<RESULT>
 	private void _createNewStates()
 	{
 		m_minStates.clear();
-		ArrayList<Transition> m_tempTrans = new ArrayList<>();
+		ArrayList<NfaTransition> m_tempTrans = new ArrayList<>();
 		for (int i=0;i<m_partitionOrderStates.length;++i)
 		{
 			int statenum = m_partitionOrderStates[i];
@@ -89,7 +89,7 @@ class DfaMinimizer<RESULT>
 			int inpos=0;
 			while (inpos<inlen)
 			{
-				Transition trans = instate.getTransition(inpos++);
+				NfaTransition trans = instate.getTransition(inpos++);
 				char startc = trans.m_firstChar;
 				char endc = trans.m_lastChar;
 				int dest = m_origOrderPartNums[trans.m_stateNum];
@@ -102,7 +102,7 @@ class DfaMinimizer<RESULT>
 					}
 					endc = trans.m_lastChar;
 				}
-				m_tempTrans.add(new Transition(startc, endc, dest));
+				m_tempTrans.add(new NfaTransition(startc, endc, dest));
 			}
 			
 			m_minStates.add(new DfaStateInfo(m_tempTrans, instate.getAcceptSetIndex()));
@@ -375,7 +375,7 @@ class DfaMinimizer<RESULT>
 		final int len = info.getTransitionCount();
 		for (int i=0; i<len; i++)
 		{
-			Transition trans = info.getTransition(i);
+			NfaTransition trans = info.getTransition(i);
 			int curtarget = m_origOrderPartNums[trans.m_stateNum]&0x7FFFFFFF;
 			if (trans.m_firstChar != nextc && prevtarget != -1)
 			{
@@ -428,8 +428,8 @@ class DfaMinimizer<RESULT>
 			return false;
 		}
 		int pos1 = 1, pos2 = 1;
-		Transition trans1 = info1.getTransition(0);
-		Transition trans2 = info2.getTransition(0);
+		NfaTransition trans1 = info1.getTransition(0);
+		NfaTransition trans2 = info2.getTransition(0);
 		int nextc=0;
 		for (;;)
 		{

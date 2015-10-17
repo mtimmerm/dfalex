@@ -22,14 +22,14 @@ class DfaStateInfo
 {
 	private int m_acceptSetIndex;
 	private int m_transitionCount;
-	private Transition[] m_transitionBuf;
+	private NfaTransition[] m_transitionBuf;
 	
-	DfaStateInfo(List<Transition> transitions, int acceptSetIndex)
+	DfaStateInfo(List<NfaTransition> transitions, int acceptSetIndex)
 	{
 		
 		m_acceptSetIndex = acceptSetIndex;
 		m_transitionCount = transitions.size();
-		m_transitionBuf = transitions.toArray(new Transition[m_transitionCount]);
+		m_transitionBuf = transitions.toArray(new NfaTransition[m_transitionCount]);
 	}
 	
 	public int getAcceptSetIndex()
@@ -42,12 +42,12 @@ class DfaStateInfo
 		return m_transitionCount;
 	}
 	
-	public Transition getTransition(int index)
+	public NfaTransition getTransition(int index)
 	{
 		return m_transitionBuf[index];
 	}
 	
-	public void forEachTransition(Consumer<Transition> consumer)
+	public void forEachTransition(Consumer<NfaTransition> consumer)
 	{
 		for (int i=0; i< m_transitionCount; ++i)
 		{

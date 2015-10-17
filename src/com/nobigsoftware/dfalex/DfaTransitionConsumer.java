@@ -17,8 +17,19 @@ package com.nobigsoftware.dfalex;
 
 /**
  * A functional interface that can accept transitions
+ * <P>
+ * This is used with {@link DfaState#enumerateTransitions(DfaTransitionConsumer)}
  */
 public interface DfaTransitionConsumer<MATCHRESULT>
 {
+    /**
+     * Accept a DFA transition
+     * <P>
+     * This call indicates that the current state has a transition to target on
+     * every character with code point &gt;=firstChar and &lt;=lastChar
+     * @param firstChar First character that triggers this transition
+     * @param lastChar Last character that triggers this transition
+     * @param target Target state of this transition
+     */
     void acceptTransition(char firstChar, char lastChar, DfaState<MATCHRESULT> target);
 }

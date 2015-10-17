@@ -58,14 +58,14 @@ class PackedTreeDfaPlaceholder<MATCH> extends DfaStatePlaceholder<MATCH>
 		char [] tempChars = new char[rawTransCount*2];
 		
 		int len=0;
-		Transition trans = info.getTransition(0);
+		NfaTransition trans = info.getTransition(0);
 		if (trans.m_firstChar != '\0')
 		{
 			tempChars[len++] = trans.m_firstChar;
 		}
 		for (int i=1;i<rawTransCount;++i)
 		{
-			Transition nextTrans = info.getTransition(i);
+			NfaTransition nextTrans = info.getTransition(i);
 			if (nextTrans.m_firstChar > trans.m_lastChar+1)
 			{
 				//there's a gap between transitions
@@ -158,7 +158,7 @@ class PackedTreeDfaPlaceholder<MATCH> extends DfaStatePlaceholder<MATCH>
 				{
 					return -1;
 				}
-				Transition trans = m_stateInfo.getTransition(m_currentTrans);
+				NfaTransition trans = m_stateInfo.getTransition(m_currentTrans);
 				if (trans.m_lastChar>=c)
 				{
 					return (c >= trans.m_firstChar ? trans.m_stateNum : -1);

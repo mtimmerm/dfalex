@@ -18,7 +18,7 @@ package com.nobigsoftware.dfalex;
 import java.io.Serializable;
 
 /**
- * A Matchable can be passed to {@link DfaBuilder} specify a set of strings to match.
+ * Base interface for the types of patterns that can be used with {@link DfaBuilder} to specify a set of strings to match.
  * <P>
  * The primary implementation classes are {@link Pattern} and {@link CharRange}.
  */
@@ -43,5 +43,29 @@ public interface Matchable extends Serializable
     /**
      * @return true if this pattern matches the empty string
      */
-    public abstract boolean matchesEmpty();
+    public boolean matchesEmpty();
+
+    /**
+     * @return true if this pattern matches any non-empty strings
+     */
+    public boolean matchesNonEmpty();
+    
+    /**
+     * @return true if this pattern matches can match anything at all
+     */
+    public boolean matchesSomething();
+
+    /**
+     * @return true if this pattern matches an infinite number of strings
+     */
+    public boolean isUnbounded();
+    
+    /**
+     * Get the reverse of this pattern
+     * <P>
+     * The reverse of a pattern matches the reverse of all the strings that this pattern matches
+     * 
+     * @return the reverse of this pattern
+     */
+    public Matchable getReversed();
 }

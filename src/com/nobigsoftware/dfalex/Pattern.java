@@ -36,6 +36,9 @@ public abstract class Pattern implements Matchable
 {
     private static final long serialVersionUID = 1L;
     
+    private volatile Pattern mv_reverse = null;
+    
+    
     public static final Pattern EMPTY = new EmptyPattern();
     /**
      * Pattern that matches one or more decimal digits
@@ -507,7 +510,25 @@ public abstract class Pattern implements Matchable
         return then(maybeRepeatI(str));
     }
 	
-	private static class CatPattern extends Pattern
+	@Override
+    public final Matchable getReversed()
+    {
+	    Pattern ret = mv_reverse;
+	    if (ret == null)
+	    {
+	        //thread-safe, but we don't bother stopping 2 threads from doing the
+	        //same work.  It's unusual and not particularly expensive
+	        ret = calcReverse();
+	        ret.mv_reverse = this;
+	        mv_reverse = ret;
+	    }
+	    return ret;
+    }
+	
+	protected abstract Pattern calcReverse();
+
+
+    private static class CatPattern extends Pattern
 	{
         private static final long serialVersionUID = 1L;
         
@@ -534,6 +555,49 @@ public abstract class Pattern implements Matchable
 		{
 			return m_matchesEmpty;
 		}
+
+        @Override
+        public boolean matchesNonEmpty()
+        {
+            if (m_first.matchesNonEmpty())
+            {
+                return m_then.matchesSomething();
+            }
+            else
+            {
+                return m_then.matchesNonEmpty() && m_first.matchesEmpty();
+            }
+        }
+
+        @Override
+        public boolean matchesSomething()
+        {
+            if (m_matchesEmpty)
+            {
+                return true;
+            }
+            return (m_first.matchesSomething() && m_then.matchesSomething());
+        }
+
+        @Override
+        public boolean isUnbounded()
+        {
+            if (m_then.isUnbounded())
+            {
+                return m_first.matchesSomething();
+            }
+            if (m_first.isUnbounded())
+            {
+                return m_then.matchesSomething();
+            }
+            return false;
+        }
+
+        @Override
+        protected Pattern calcReverse()
+        {
+            return new CatPattern(m_then, m_first);
+        }
 	}
     private static class WrapPattern extends Pattern
     {
@@ -556,6 +620,37 @@ public abstract class Pattern implements Matchable
         public boolean matchesEmpty()
         {
             return m_tomatch.matchesEmpty();
+        }
+        
+        @Override
+        public boolean matchesNonEmpty()
+        {
+            return m_tomatch.matchesNonEmpty();
+        }
+
+        @Override
+        public boolean matchesSomething()
+        {
+            return m_tomatch.matchesSomething();
+        }
+
+        @Override
+        public boolean isUnbounded()
+        {
+            return m_tomatch.isUnbounded();
+        }
+        @Override
+        protected Pattern calcReverse()
+        {
+            Matchable revmatch = m_tomatch.getReversed();
+            if (revmatch == m_tomatch)
+            {
+                return this;
+            }
+            else
+            {
+                return new WrapPattern(revmatch);
+            }
         }
     }
     
@@ -580,12 +675,35 @@ public abstract class Pattern implements Matchable
         }
 
         @Override
+        public boolean matchesNonEmpty()
+        {
+            return false;
+        }
+
+        @Override
+        public boolean matchesSomething()
+        {
+            return true;
+        }
+
+        @Override
+        public boolean isUnbounded()
+        {
+            return false;
+        }
+        
+        @Override
         public Pattern then(Matchable tocat)
         {
             return match(tocat);
         }
-        
+        @Override
+        protected Pattern calcReverse()
+        {
+            return this;
+        }
     }
+    
 	private static class StringPattern extends Pattern
 	{
         private static final long serialVersionUID = 1L;
@@ -615,6 +733,36 @@ public abstract class Pattern implements Matchable
 		{
 			return m_tomatch.length() == 0;
 		}
+		
+        @Override
+        public boolean matchesNonEmpty()
+        {
+            return m_tomatch.length() > 0;
+        }
+
+        @Override
+        public boolean matchesSomething()
+        {
+            return true;
+        }
+
+        @Override
+        public boolean isUnbounded()
+        {
+            return false;
+        }
+        @Override
+        protected Pattern calcReverse()
+        {
+            if (m_tomatch.length()<2)
+            {
+                return this;
+            }
+            else
+            {
+                return new StringPattern((new StringBuilder(m_tomatch)).reverse().toString());
+            }
+        }
 	}
     private static class StringIPattern extends Pattern
     {
@@ -655,6 +803,36 @@ public abstract class Pattern implements Matchable
         {
             return m_tomatch.length() == 0;
         }
+        
+        @Override
+        public boolean matchesNonEmpty()
+        {
+            return m_tomatch.length() > 0;
+        }
+
+        @Override
+        public boolean matchesSomething()
+        {
+            return true;
+        }
+
+        @Override
+        public boolean isUnbounded()
+        {
+            return false;
+        }
+        @Override
+        protected Pattern calcReverse()
+        {
+            if (m_tomatch.length()<2)
+            {
+                return this;
+            }
+            else
+            {
+                return new StringIPattern((new StringBuilder(m_tomatch)).reverse().toString());
+            }
+        }
     }
 	private static class RepeatingPattern extends Pattern
 	{
@@ -691,6 +869,37 @@ public abstract class Pattern implements Matchable
 		{
 			return (!m_needAtLeastOne) || m_pattern.matchesEmpty();
 		}
+        
+        @Override
+        public boolean matchesNonEmpty()
+        {
+            return m_pattern.matchesNonEmpty();
+        }
+
+        @Override
+        public boolean matchesSomething()
+        {
+            return m_pattern.matchesSomething();
+        }
+
+        @Override
+        public boolean isUnbounded()
+        {
+            return m_pattern.matchesNonEmpty();
+        }
+        @Override
+        protected Pattern calcReverse()
+        {
+            Matchable revpat = m_pattern.getReversed();
+            if (revpat == m_pattern)
+            {
+                return this;
+            }
+            else
+            {
+                return new RepeatingPattern(revpat, m_needAtLeastOne);
+            }
+        }
 	}
 	private static class OptionalPattern extends Pattern
 	{
@@ -722,27 +931,54 @@ public abstract class Pattern implements Matchable
 		{
 			return true;
 		}
+        
+        @Override
+        public boolean matchesNonEmpty()
+        {
+            return m_pattern.matchesNonEmpty();
+        }
+
+        @Override
+        public boolean matchesSomething()
+        {
+            return true;
+        }
+
+        @Override
+        public boolean isUnbounded()
+        {
+            return m_pattern.isUnbounded();
+        }
+        @Override
+        protected Pattern calcReverse()
+        {
+            Matchable revpat = m_pattern.getReversed();
+            if (revpat == m_pattern)
+            {
+                return this;
+            }
+            else
+            {
+                return new OptionalPattern(revpat);
+            }
+        }
 	}
 	private static class UnionPattern extends Pattern
 	{
         private static final long serialVersionUID = 1L;
+        private static final int F_EMPTY_CHECKED = 1;
+        private static final int F_EMPTY_MATCH = 2;
+        private static final int F_NONEMPTY_CHECKED = 4;
+        private static final int F_NONEMPTY_MATCH = 8;
+        private static final int F_UNBOUND_CHECKED = 16;
+        private static final int F_UNBOUND_MATCH = 32;
         
         private final Matchable[] m_choices;
-		private final boolean m_matchesEmpty;
+		private volatile int mv_flags=0;
 		
 		UnionPattern(Matchable[] choices)
 		{
 			m_choices = Arrays.copyOf(choices, choices.length);
-			boolean matchesEmpty = false;
-			for (Matchable pat : choices)
-			{
-				if (pat.matchesEmpty())
-				{
-					matchesEmpty = true;
-					break;
-				}
-			}
-			m_matchesEmpty = matchesEmpty;
 		}
 
 		@Override
@@ -759,7 +995,83 @@ public abstract class Pattern implements Matchable
 		@Override
 		public boolean matchesEmpty()
 		{
-			return m_matchesEmpty;
+		    int f = mv_flags;
+		    if ((f & F_EMPTY_CHECKED) == 0)
+		    {
+	            for (Matchable pat : m_choices)
+	            {
+	                if (pat.matchesEmpty())
+	                {
+	                    f |= F_EMPTY_MATCH;
+	                    break;
+	                }
+	            }
+                f |= F_EMPTY_CHECKED;
+	            mv_flags = f;
+		    }
+			return ((f & F_EMPTY_MATCH) != 0);
 		}
+		
+        @Override
+        public boolean matchesNonEmpty()
+        {
+            int f = mv_flags;
+            if ((f & F_NONEMPTY_CHECKED) == 0)
+            {
+                for (Matchable pat : m_choices)
+                {
+                    if (pat.matchesNonEmpty())
+                    {
+                        f |= F_NONEMPTY_MATCH;
+                        break;
+                    }
+                }
+                f |= F_NONEMPTY_CHECKED;
+                mv_flags = f;
+            }
+            return ((f & F_NONEMPTY_MATCH) != 0);
+        }
+        @Override
+        public boolean isUnbounded()
+        {
+            int f = mv_flags;
+            if ((f & F_UNBOUND_CHECKED) == 0)
+            {
+                for (Matchable pat : m_choices)
+                {
+                    if (pat.isUnbounded())
+                    {
+                        f |= F_UNBOUND_MATCH;
+                        break;
+                    }
+                }
+                f |= F_UNBOUND_CHECKED;
+                mv_flags = f;
+            }
+            return ((f & F_UNBOUND_MATCH) != 0);
+        }
+
+        @Override
+        public boolean matchesSomething()
+        {
+            return matchesEmpty()||matchesNonEmpty();
+        }
+        @Override
+        protected Pattern calcReverse()
+        {
+            Pattern ret = this;
+            UnionPattern newpat = new UnionPattern(m_choices);
+            for (int i=0; i<newpat.m_choices.length; ++i)
+            {
+                Matchable old = newpat.m_choices[i];
+                Matchable rev = old.getReversed();
+                if (old != rev)
+                {
+                    newpat.m_choices[i] = rev;
+                    ret = newpat;
+                }
+            }
+            return ret;
+        }
 	}
 }

@@ -38,7 +38,7 @@ class IntRangeClosureQueue
 	}
 	
 	/**
-	 * Add an integer to the tail of the queue if it's not already there
+	 * Add an integer to the tail of the queue if it's not already present
 	 * 
 	 * @param val  integer to add
 	 * @return true if the integer was added to the queue, or false

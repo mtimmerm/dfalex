@@ -97,6 +97,11 @@ public class CharRange implements Matchable
         m_bounds = bounds;
     }
 
+    /**
+     * Create a CharRange that matches all characters with code points front in to out, inclusive.
+     * @param in  one end of the character range
+     * @param out the other end of the character range
+     */
     public CharRange(char in, char out)
     {
         if (out < in)
@@ -154,7 +159,7 @@ public class CharRange implements Matchable
             // range includes 0
             if (m_bounds.length == 1)
             {
-                //src == ALL
+                //this == ALL
                 return NONE;
             }
             return new CharRange(Arrays.copyOfRange(m_bounds, 1,
@@ -205,6 +210,30 @@ public class CharRange implements Matchable
     }
     
     @Override
+    public boolean matchesNonEmpty()
+    {
+        return (m_bounds.length>0);
+    }
+
+    @Override
+    public boolean matchesSomething()
+    {
+        return (m_bounds.length>0);
+    }
+
+    @Override
+    public boolean isUnbounded()
+    {
+        return false;
+    }
+
+    @Override
+    public Matchable getReversed()
+    {
+        return this;
+    }
+
+    @Override
     public final int addToNFA(Nfa<?> nfa, int targetState)
     {
         final int len = m_bounds.length;
@@ -246,7 +275,7 @@ public class CharRange implements Matchable
      * @param to inclusive upper bound
      * @return the pattern that matches the range
      */
-    public static Matchable range(char from, char to)
+    public static CharRange range(char from, char to)
     {
         return new CharRange(from, to);
     }

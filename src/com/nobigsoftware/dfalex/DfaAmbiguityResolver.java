@@ -23,11 +23,14 @@ import java.util.function.Function;
  * Implementations of this interface are used to resolve ambiguities in {@link DfaBuilder}.
  * <P>
  * When it's possible for a single string to match patterns that produce different results, the
- * ambiguity resolve is called to determine what the result should be.
+ * ambiguity resolver is called to determine what the result should be.
  * <P>
  * The implementation can throw a {@link DfaAmbiguityException} in this case, or can combine the
  * multiple result objects into a single object if its type (e.g., EnumSet) permits.
+ * <P>
+ * This interface implements Serializable so that it can be written into the key signature for
+ * {@link BuilderCache}.
  */
-public interface DfaAmbiguityResolver<MATCHRESULT> extends Serializable, Function<Set<MATCHRESULT>, MATCHRESULT>
+public interface DfaAmbiguityResolver<MATCHRESULT> extends Serializable, Function<Set<? extends MATCHRESULT>, MATCHRESULT>
 {
 }

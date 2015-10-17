@@ -36,7 +36,7 @@ import com.nobigsoftware.util.SHAOutputStream;
  * DFA that will simultaneously match a sequence of characters against all of those patterns.
  * <P>
  * You can also build DFAs for multiple sets of patterns simultaneously. The resulting DFAs will
- * be optimized to shared states wherever possible.
+ * be optimized to share states wherever possible.
  * <P>
  * When you build a DFA to match a set of patterns, you get a "start state" (a {@link DfaState}) for
  * that pattern set. Each character of a string can be passed in turn to {@link DfaState#getNextState(char)},
@@ -108,7 +108,7 @@ public class DfaBuilder<MATCHRESULT extends Serializable>
      *                              will be thrown in that case.
      *  @return The start state for a DFA that matches the set of patterns in language
      */
-    public DfaState<MATCHRESULT> build(DfaAmbiguityResolver<MATCHRESULT> ambiguityResolver)
+    public DfaState<MATCHRESULT> build(DfaAmbiguityResolver<? super MATCHRESULT> ambiguityResolver)
     {
         return build(Collections.singletonList(m_patterns.keySet()), ambiguityResolver).get(0);
     }
@@ -125,7 +125,7 @@ public class DfaBuilder<MATCHRESULT extends Serializable>
      *                              will be thrown in that case.
      *  @return The start state for a DFA that matches the set of patterns in language
      */
-    public DfaState<MATCHRESULT> build(Set<MATCHRESULT> language, DfaAmbiguityResolver<MATCHRESULT> ambiguityResolver)
+    public DfaState<MATCHRESULT> build(Set<MATCHRESULT> language, DfaAmbiguityResolver<? super MATCHRESULT> ambiguityResolver)
     {
         return build(Collections.singletonList(language), ambiguityResolver).get(0);
     }
@@ -146,7 +146,7 @@ public class DfaBuilder<MATCHRESULT extends Serializable>
 	 *         corresponding start states in corresponding positions.
 	 */
     @SuppressWarnings("unchecked")
-    public List<DfaState<MATCHRESULT>> build(List<Set<MATCHRESULT>> languages, DfaAmbiguityResolver<MATCHRESULT> ambiguityResolver)
+    public List<DfaState<MATCHRESULT>> build(List<Set<MATCHRESULT>> languages, DfaAmbiguityResolver<? super MATCHRESULT> ambiguityResolver)
     {
         if (languages.isEmpty())
         {
@@ -241,7 +241,7 @@ public class DfaBuilder<MATCHRESULT extends Serializable>
     }
     
     
-	private SerializableDfa<MATCHRESULT> _build(List<Set<MATCHRESULT>> languages, DfaAmbiguityResolver<MATCHRESULT> ambiguityResolver)
+	private SerializableDfa<MATCHRESULT> _build(List<Set<MATCHRESULT>> languages, DfaAmbiguityResolver<? super MATCHRESULT> ambiguityResolver)
 	{
 		Nfa<MATCHRESULT> nfa = new Nfa<>();
 		
@@ -305,18 +305,73 @@ public class DfaBuilder<MATCHRESULT extends Serializable>
 		return serializableDfa;
 	}
 	
+    /**
+     * Build DFAs from a provided NFA
+     * <P>
+     * This method is used when you want to build the NFA yourself instead of letting
+     * this class do it.
+     * <P>
+     * Languages built simultaneously will be globally minimized and will share as many states as possible.
+     * 
+     * @param nfa           The NFA
+     * @param nfaStartStates     The return value will include the DFA states corresponding to these NFA states, in the same order
+     * @param ambiguityResolver     When patterns for multiple results match the same string, this is called to
+     *                              combine the multiple results into one.  If this is null, then a DfaAmbiguityException
+     *                              will be thrown in that case.
+     * @param cache If this cache is non-null, it will be checked for a memoized result for this NFA, and will be populated
+     *      with a memoized result when the call is complete.
+     * @return DFA start states that are equivalent to the given NFA start states.  This will have the same length as nfaStartStates, with
+     *         corresponding start states in corresponding positions.
+     */
+	@SuppressWarnings("unchecked")
+    public static <MR> List<DfaState<MR>> buildFromNfa(Nfa<MR> nfa, int[] nfaStartStates, DfaAmbiguityResolver<? super MR> ambiguityResolver, BuilderCache cache )
+	{
+	    String cacheKey = null;
+	    SerializableDfa<MR> serializableDfa = null;
+	    if (cache != null)
+	    {
+            try
+            {
+                //generate the cache key by serializing key info into an SHA hash
+                SHAOutputStream sha = new SHAOutputStream();
+                sha.on(false);
+                ObjectOutputStream os = new ObjectOutputStream(sha);
+                os.flush();
+                sha.on(true);
+                os.writeObject(nfaStartStates);
+                os.writeObject(nfa);
+                os.writeObject(ambiguityResolver);
+                os.flush();
+                
+                cacheKey = sha.getBase32Digest();
+                os.close();
+            }
+            catch(IOException e)
+            {
+                //doesn't really happen
+                throw new RuntimeException(e);
+            }
+            serializableDfa = (SerializableDfa<MR>)cache.getCachedItem(cacheKey);
+	    }
+        if (serializableDfa == null)
+        {
+            RawDfa<MR> minimalDfa;
+            {
+                RawDfa<MR> rawDfa = (new DfaFromNfa<MR>(nfa, nfaStartStates, ambiguityResolver)).getDfa();
+                minimalDfa = (new DfaMinimizer<MR>(rawDfa)).getMinimizedDfa();
+            }
+            serializableDfa = new SerializableDfa<>(minimalDfa);
+            if (cacheKey != null && cache != null)
+            {
+                cache.maybeCacheItem(cacheKey, serializableDfa);
+            }
+        }
+        return serializableDfa.getStartStates();
+	}
+	
 	
 	private static <T> T defaultAmbiguityResolver(Set<T> matches)
 	{
-		T ret = null;
-		for (T match : matches)
-		{
-			if (ret != null)
-			{
-				throw new DfaAmbiguityException(matches);
-			}
-			ret = match;
-		}
-		return ret;
+        throw new DfaAmbiguityException(matches);
 	}
 }

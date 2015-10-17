@@ -204,8 +204,8 @@ public class DfaAuxiliaryInformation<MATCHRESULT>
             return m_cycleNumbers;
         }
         //Tarjan's algorithm
-        final int[] pindex = new int[0];
-        final int[] pcycle = new int[0];
+        final int[] pindex = new int[]{0};
+        final int[] pcycle = new int[]{0};
         final ArrayDeque<DfaState<MATCHRESULT>> stack = new ArrayDeque<>();
         final int[] orderIndex = new int[getStatesByNumber().size()];
         final int[] backLink = new int[orderIndex.length];

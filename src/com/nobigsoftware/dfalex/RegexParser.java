@@ -21,6 +21,9 @@ import java.util.ArrayList;
 /**
  * Parses regular expressions into {@link Matchable} implementations.
  * <P>
+ * One would normally use {@link Pattern#regex(String)} or {@link Pattern#regexI(String)} instead
+ * of using this class directly
+ * <P>
  * Syntax supported includes:
  * <UL><LI>. (matches ANY character, including newlines)
  * </LI><LI> ?, +, *, |, ()
@@ -30,7 +33,7 @@ import java.util.ArrayList;
  * </LI><LI> \d, \D, \s, \S, \w, \W class escapes
  * </LI></UL>
  */
-public class RegexParser {
+class RegexParser {
     private static final DfaState<Action> DFA = _buildParserDfa();
 
     private final boolean m_caseI;

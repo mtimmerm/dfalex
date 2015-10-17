@@ -16,12 +16,27 @@
 package com.nobigsoftware.dfalex;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
+/**
+ * Simple non-deterministic finite automaton (NFA) representation
+ * <P>
+ * A set of {@link Matchable} patterns is converted to an NFA as an
+ * intermediate step toward creating the DFA.
+ * <P>
+ * You can also build an NFA directly with this class and convert it to a DFA
+ * with {@link DfaBuilder#buildFromNfa(Nfa, int[], DfaAmbiguityResolver, com.nobigsoftware.util.BuilderCache)}.
+ * <P>
+ * See <a href="https://en.wikipedia.org/wiki/Nondeterministic_finite_automaton">NFA on Wikipedia</a>
+ * 
+ * @param MATCHRESULT The type of result produce by matching a pattern.  This must be serializable
+ *      to support caching of built DFAs
+ */
 public class Nfa<MATCHRESULT>
 {
-	private final ArrayList<List<Transition>> m_stateTransitions = new ArrayList<>();
+	private final ArrayList<List<NfaTransition>> m_stateTransitions = new ArrayList<>();
 	private final ArrayList<List<Integer>> m_stateEpsilons = new ArrayList<>();
 	private final ArrayList<MATCHRESULT> m_stateAccepts = new ArrayList<>();
 	
@@ -43,13 +58,13 @@ public class Nfa<MATCHRESULT>
 	
 	public void addTransition(int from, int to, char firstChar, char lastChar)
 	{
-		List<Transition> list = m_stateTransitions.get(from);
+		List<NfaTransition> list = m_stateTransitions.get(from);
 		if (list == null)
 		{
 			list = new ArrayList<>();
 			m_stateTransitions.set(from, list);
 		}
-		list.add(new Transition(firstChar, lastChar, to));
+		list.add(new NfaTransition(firstChar, lastChar, to));
 	}
 	
 	public void addEpsilon(int from, int to)
@@ -68,11 +83,23 @@ public class Nfa<MATCHRESULT>
 		return m_stateAccepts.get(state);
 	}
 	
-	boolean hasTransitionsOrAccepts(int state)
+	public boolean hasTransitionsOrAccepts(int state)
 	{
 		return (m_stateAccepts.get(state) != null || m_stateTransitions.get(state) != null);
 	}
 	
+	public Iterable<Integer> getStateEpsilons(int state)
+	{
+        List<Integer> list = m_stateEpsilons.get(state);
+        return (list != null ? list : Collections.emptyList());
+	}
+	
+    public Iterable<NfaTransition> getStateTransitions(int state)
+    {
+        List<NfaTransition> list = m_stateTransitions.get(state);
+        return (list != null ? list : Collections.emptyList());
+    }
+    
 	void forStateEpsilons(int state, Consumer<Integer> dest)
 	{
 		List<Integer> list = m_stateEpsilons.get(state);
@@ -82,9 +109,9 @@ public class Nfa<MATCHRESULT>
 		}
 	}
 	
-	void forStateTransitions(int state, Consumer<Transition> dest)
+	void forStateTransitions(int state, Consumer<NfaTransition> dest)
 	{
-		List<Transition> list = m_stateTransitions.get(state);
+		List<NfaTransition> list = m_stateTransitions.get(state);
 		if (list != null)
 		{
 			list.forEach(dest);

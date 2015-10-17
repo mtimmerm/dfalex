@@ -21,8 +21,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
 
 
 /**
@@ -34,7 +32,7 @@ class DfaFromNfa<RESULT>
 	private final Nfa<RESULT> m_nfa;
 	private final int[] m_nfaStartStates;
 	private final int[] m_dfaStartStates;
-	private final Function<Set<RESULT>, RESULT> m_ambiguityResolver;
+	private final DfaAmbiguityResolver<? super RESULT> m_ambiguityResolver;
 	
 	//utility
 	private final DfaStateSignatureCodec m_dfaSigCodec = new DfaStateSignatureCodec();
@@ -52,7 +50,7 @@ class DfaFromNfa<RESULT>
 	private final ArrayList<IntListKey> m_dfaStateSignatures= new ArrayList<>();
 	private final ArrayList<DfaStateInfo> m_dfaStates = new ArrayList<>();
 	
-	public DfaFromNfa(Nfa<RESULT> nfa, int[] nfaStartStates, Function<Set<RESULT>, RESULT> ambiguityResolver)
+	public DfaFromNfa(Nfa<RESULT> nfa, int[] nfaStartStates, DfaAmbiguityResolver<? super RESULT> ambiguityResolver)
 	{
 		m_nfa = nfa;
 		m_nfaStartStates = nfaStartStates;
@@ -71,8 +69,8 @@ class DfaFromNfa<RESULT>
 	{
 		
 		final CompactIntSubset nfaStateSet = new CompactIntSubset(m_nfa.numStates());
-		final ArrayList<Transition> dfaStateTransitions = new ArrayList<>();
-		final ArrayList<Transition> transitionQ = new ArrayList<>(1000);
+		final ArrayList<NfaTransition> dfaStateTransitions = new ArrayList<>();
+		final ArrayList<NfaTransition> transitionQ = new ArrayList<>(1000);
 		
 		//Create the DFA start states
 		for(int i = 0; i<m_dfaStartStates.length; ++i)
@@ -121,7 +119,7 @@ class DfaFromNfa<RESULT>
 			//make a range of NFA transitions corresponding to the next DFA transition
 			while(tqstart < tqlen)
 			{
-				Transition trans = transitionQ.get(tqstart);
+				NfaTransition trans = transitionQ.get(tqstart);
 				if (trans.m_lastChar < minc)
 				{
 					++tqstart;
@@ -165,7 +163,7 @@ class DfaFromNfa<RESULT>
 	                _addNfaStateAndEpsilonsToSubset(nfaStateSet, trans.m_stateNum);
 				}
 				
-				dfaStateTransitions.add(new Transition(startc, endc,  _getDfaState(nfaStateSet)));
+				dfaStateTransitions.add(new NfaTransition(startc, endc,  _getDfaState(nfaStateSet)));
 
 				minc = (char)(endc+1);
 				if (minc < endc)
@@ -233,7 +231,8 @@ class DfaFromNfa<RESULT>
 		return dfaStateNum;
 	}
 	
-	private DfaStateInfo _createStateInfo(IntListKey sig, List<Transition> transitions)
+	@SuppressWarnings("unchecked")
+    private DfaStateInfo _createStateInfo(IntListKey sig, List<NfaTransition> transitions)
 	{
 		//calculate the set of accepts
 		m_tempResultSet.clear();
@@ -249,7 +248,7 @@ class DfaFromNfa<RESULT>
 		RESULT dfaAccept = null;
 		if (m_tempResultSet.size() > 1)
 		{
-			dfaAccept = m_ambiguityResolver.apply(m_tempResultSet);
+			dfaAccept = (RESULT)m_ambiguityResolver.apply(m_tempResultSet);
 		}
 		else if(!m_tempResultSet.isEmpty())
 		{

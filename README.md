@@ -21,7 +21,7 @@ Start Here:
 Requirements
 ------------
 
-DFALex needs Java 8 or better.  No special libraries are required. Just grab the source in src/ or a jar from bin/.  There won't be any official releases until more tests and examples are added.
+DFALex needs Java 8 or better.  No special libraries are required. The latest release is in the releases tab, or you can grab the very latest source (new features that might be broken!) from src/.
 
 If you want to run the tests, you'll need JUnit4.
 

@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.Set;
 import java.util.function.Function;
 
+import com.nobigsoftware.util.BuilderCache;
+
 /**
  * Implementations of this interface are used to resolve ambiguities in {@link DfaBuilder}.
  * <P>

@@ -25,7 +25,7 @@ import com.nobigsoftware.util.BuilderCache;
  * Builds search and replace functions that finds patterns in strings and replaces them
  * <P>
  * Given a set of patterns and associated {@link StringReplacement} functions, you can produce an
- * optimized, thread-safe Function<String,String> that will find all occurrences of those patterns and replace
+ * optimized, thread-safe Function&lt;String,String&gt; that will find all occurrences of those patterns and replace
  * them with their replacements.
  * <P>
  * The returned function is thread-safe.
@@ -88,7 +88,7 @@ public class SearchAndReplaceBuilder
      * Build a search and replace function
      * <P>
      * The resulting function finds all patterns in the string you give it, and replaces them all with
-     * the associated {@StringReplacement}.
+     * the associated {@link StringReplacement}.
      * <P>
      * Matches are found in order.  If matches to more than one pattern occur at the same position,
      * then the <i>longest</i> match will be used.  If there is a tie, then the first one added to this

@@ -264,9 +264,9 @@ public class DfaBuilder<MATCHRESULT extends Serializable>
      *                              will be thrown in that case.
      *  @return A {@link StringSearcher} for all the patterns in this builder
      */
-    public StringSearcher<MATCHRESULT> buildStringSearcher(DfaAmbiguityResolver<MATCHRESULT> resolver)
+    public StringSearcher<MATCHRESULT> buildStringSearcher(DfaAmbiguityResolver<MATCHRESULT> ambiguityResolver)
     {
-        return new StringSearcher<>(build(resolver), buildReverseFinder());
+        return new StringSearcher<>(build(ambiguityResolver), buildReverseFinder());
     }
     
     /**

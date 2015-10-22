@@ -186,13 +186,13 @@ public class DfaAuxiliaryInformation<MATCHRESULT>
     /**
      * Get an array that maps each state number to the state's 'cycle number', such that:
      * <UL><LI>States that are not in a cycle have cycle number -1
-     * </LI><LI>States that are in a cycle have cycle number >= 0
+     * </LI><LI>States that are in a cycle have cycle number &gt;= 0
      * </LI><LI>States in cycles have the same cycle number IFF they are in the same cycle
      *      (i.e., they are reachable from each other)
      * </LI><LI>Cycles are compactly numbered from 0
      * </LI></UL>
-     * Note that states with cycle numbers >=0 match an infinite number of different strings, while
-     * states with cycle number -1 match a finite number of strings with lengths <= the size
+     * Note that states with cycle numbers &gt;=0 match an infinite number of different strings, while
+     * states with cycle number -1 match a finite number of strings with lengths &lt;= the size
      * of this array.
      * 
      * @return  the cycle numbers array

@@ -60,7 +60,7 @@ public interface StringMatchIterator<MATCHRESULT> extends Iterator<MATCHRESULT>
     /**
      * rewind (or jump forward) to a given position in the source string
      * <P>
-     * The next match returned will be the one (if any) that starts at a position >= pos
+     * The next match returned will be the one (if any) that starts at a position &gt;= pos
      * <P>
      * IMPORTANT:  If this method returns true, you must call {@link #next()} to get the result
      * of the next match.  Until then calls to the the match accessor methods will continue to

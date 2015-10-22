@@ -125,7 +125,7 @@ public class StringSearcher<MATCHRESULT>
      * If it returns a String, then the pattern occurrence will be replaced with the string returned.
      * 
      * @param src  the String to search   
-     * @param replacer  the {@link Replacer} that provides new values for matches in the string
+     * @param replacer  the {@link ReplaceFunc} that provides new values for matches in the string
      * @return the new string with values replaced
      */
     public String findAndReplace(String src, ReplaceFunc<? super MATCHRESULT> replacer)
@@ -190,7 +190,7 @@ public class StringSearcher<MATCHRESULT>
          * @param startPos  the start index of the current match in src
          * @param endPos    the end index of the current match in src
          * @return if this is &gt;0, then it is the position in the source string at which to continue processing after
-         *      replacement.  If you set this <= startPos, a runtime exception will be thrown to
+         *      replacement.  If you set this &lt;= startPos, a runtime exception will be thrown to
          *      abort the infinite loop that would result.  Almost always return 0.
          */
         int apply(StringBuilder dest, MR mr, String src, int startPos, int endPos);

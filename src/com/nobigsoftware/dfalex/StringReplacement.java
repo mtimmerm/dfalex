@@ -30,7 +30,7 @@ public interface StringReplacement
      * @param startPos  the start index of the current match in src
      * @param endPos    the end index of the current match in src
      * @return if this is &gt;0, then it is the position in the source string at which to continue processing after
-     *      replacement.  If you set this <= startPos, a runtime exception will be thrown to
+     *      replacement.  If you set this &lt;= startPos, an IndexOutOfBoundsException will be thrown to
      *      abort the infinite loop that would result.  Almost always return 0.
      */
     int apply(StringBuilder dest, String src, int startPos, int endPos);

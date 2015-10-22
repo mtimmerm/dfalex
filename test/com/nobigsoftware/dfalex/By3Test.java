@@ -40,7 +40,7 @@ public class By3Test extends TestBase
         builder.addPattern(By3, true);
         DfaState<?> start = builder.build(Collections.singleton(Boolean.TRUE), null);
         Assert.assertEquals(3, _countStates(start));
-        _checkDfa(start, "By3Test.out.txt", true);
+        _checkDfa(start, "By3Test.out.txt", false);
     }
     
 

@@ -39,7 +39,16 @@ public abstract class Pattern implements Matchable
     private volatile Pattern mv_reverse = null;
     
     
+    /**
+     * Pattern that matches only the empty string
+     */
     public static final Pattern EMPTY = new EmptyPattern();
+    
+    /**
+     * Pattern that matches all strings
+     */
+    public static final Pattern ALL_STRINGS = maybeRepeat(CharRange.ALL);
+    
     /**
      * Pattern that matches one or more decimal digits
      */
@@ -596,7 +605,7 @@ public abstract class Pattern implements Matchable
         @Override
         protected Pattern calcReverse()
         {
-            return new CatPattern(m_then, m_first);
+            return new CatPattern(m_then.getReversed(), m_first.getReversed());
         }
 	}
     private static class WrapPattern extends Pattern

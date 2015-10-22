@@ -54,7 +54,7 @@ import com.nobigsoftware.util.SHAOutputStream;
  * You can provide a cache that can remember and recall built DFAs, which allows you to build DFAs
  * during your build process in various ways, instead of building them at runtime.  Or you can use
  * the cache to store built DFAs on the first run of your program so they don't need to be built
- * the next time...  But this is usually unnecessary, since building DFAs is more than fast enough to
+ * the next time...  But this is usually unnecessary, since building DFAs is more fast enough to
  * do during runtime initialization.
  * 
  * @param MATCHRESULT The type of result to produce by matching a pattern.  This must be serializable
@@ -67,41 +67,41 @@ public class DfaBuilder<MATCHRESULT extends Serializable>
     private static final int DFATYPE_REVERSEFINDER = 1;
     
     private final BuilderCache m_cache;
-	private final Map<MATCHRESULT, List<Matchable>> m_patterns = new LinkedHashMap<>();
-	
-	/**
-	 * Create a new DfaBuilder without a {@link BuilderCache}
-	 */
-	public DfaBuilder()
-	{
-	    m_cache = null;
-	}
-	
-	/**
-	 * Create a new DfaBuilder, with a builder cache to bypass recalculation of pre-built DFAs
-	 * 
-	 * @param cache    The BuilderCache to use
-	 */
-	public DfaBuilder(BuilderCache cache)
-	{
-	    m_cache = cache;
-	}
-	
-	/**
-	 * Reset this DFA builder by forgetting all the patterns that have been added
-	 */
-	public void clear()
-	{
-	    m_patterns.clear();
-	}
-	
-	public void addPattern(Matchable pat, MATCHRESULT accept)
-	{
-		List<Matchable> patlist = m_patterns.computeIfAbsent(accept, x -> new ArrayList<>());
-		patlist.add(pat);
-	}
-	
-	
+    private final Map<MATCHRESULT, List<Matchable>> m_patterns = new LinkedHashMap<>();
+    
+    /**
+     * Create a new DfaBuilder without a {@link BuilderCache}
+     */
+    public DfaBuilder()
+    {
+        m_cache = null;
+    }
+    
+    /**
+     * Create a new DfaBuilder, with a builder cache to bypass recalculation of pre-build DFAs
+     * 
+     * @param cache    The BuilderCache to use
+     */
+    public DfaBuilder(BuilderCache cache)
+    {
+        m_cache = cache;
+    }
+    
+    /**
+     * Reset this DFA builder by forgetting all the patterns that have been added
+     */
+    public void clear()
+    {
+        m_patterns.clear();
+    }
+    
+    public void addPattern(Matchable pat, MATCHRESULT accept)
+    {
+        List<Matchable> patlist = m_patterns.computeIfAbsent(accept, x -> new ArrayList<>());
+        patlist.add(pat);
+    }
+    
+    
     /**
      * Build DFA for a single language
      * <P>
@@ -135,20 +135,20 @@ public class DfaBuilder<MATCHRESULT extends Serializable>
     }
 
     /**
-	 * Build DFAs for multiple languages simultaneously.
-	 * <P>
-	 * Each language is specified as a subset of available MATCHRESULTs, and will include patterns
-	 * for each result in its set.
-	 * <P>
-	 * Languages built simultaneously will be globally minimized and will share as many states as possible.
-	 * 
-	 * @param languages 	sets defining the languages to build
-	 * @param ambiguityResolver	 	When patterns for multiple results match the same string, this is called to
-	 * 								combine the multiple results into one.	If this is null, then a DfaAmbiguityException
-	 * 								will be thrown in that case.
-	 * @return Start states for DFAs that match the given languages.  This will have the same length as languages, with
-	 *         corresponding start states in corresponding positions.
-	 */
+     * Build DFAs for multiple languages simultaneously.
+     * <P>
+     * Each language is specified as a subset of available MATCHRESULTs, and will include patterns
+     * for each result in its set.
+     * <P>
+     * Languages built simultaneously will be globally minimized and will share as many states as possible.
+     * 
+     * @param languages     sets defining the languages to build
+     * @param ambiguityResolver     When patterns for multiple results match the same string, this is called to
+     *                              combine the multiple results into one.  If this is null, then a DfaAmbiguityException
+     *                              will be thrown in that case.
+     * @return Start states for DFAs that match the given languages.  This will have the same length as languages, with
+     *         corresponding start states in corresponding positions.
+     */
     @SuppressWarnings("unchecked")
     public List<DfaState<MATCHRESULT>> build(List<Set<MATCHRESULT>> languages, DfaAmbiguityResolver<? super MATCHRESULT> ambiguityResolver)
     {
@@ -409,70 +409,70 @@ public class DfaBuilder<MATCHRESULT extends Serializable>
         return cacheKey;
     }
     
-	private SerializableDfa<MATCHRESULT> _build(List<Set<MATCHRESULT>> languages, DfaAmbiguityResolver<? super MATCHRESULT> ambiguityResolver)
-	{
-		Nfa<MATCHRESULT> nfa = new Nfa<>();
-		
-		int[] nfaStartStates = new int[languages.size()];
-		for (int i=0; i<languages.size(); ++i)
-		{
-			nfaStartStates[i] = nfa.addState(null);
-		}
-		
-		if (ambiguityResolver == null)
-		{
-			ambiguityResolver = DfaBuilder::defaultAmbiguityResolver;
-		}
-		
-		for (Entry<MATCHRESULT, List<Matchable>> patEntry : m_patterns.entrySet())
-		{
-			List<Matchable> patList = patEntry.getValue();
-			if (patList == null || patList.size()<1)
-			{
-				continue;
-			}
-			int matchState = -1; //start state for matching this token
-			for (int i=0; i<languages.size(); ++i)
-			{
-				if (!languages.get(i).contains(patEntry.getKey()))
-				{
-					continue;
-				}
-				if (matchState<0)
-				{
-					int acceptState = nfa.addState(patEntry.getKey()); //final state accepting this token
-					if (patList.size()>1)
-					{
-					    //we have multiple patterns.  Make a union
-						matchState = nfa.addState(null);
-						for (Matchable pat : patList)
-						{
-							nfa.addEpsilon(matchState, pat.addToNFA(nfa, acceptState));
-						}
-					}
-					else
-					{
-					    //only one pattern no union necessary
-						matchState = patList.get(0).addToNFA(nfa, acceptState);
-					}
-				}
-				//language i matches these patterns
-				nfa.addEpsilon(nfaStartStates[i],matchState);
-			}
-		}
-		
-		SerializableDfa<MATCHRESULT> serializableDfa;
-		{
-			RawDfa<MATCHRESULT> minimalDfa;
-			{
-				RawDfa<MATCHRESULT> rawDfa = (new DfaFromNfa<MATCHRESULT>(nfa, nfaStartStates, ambiguityResolver)).getDfa();
-				minimalDfa = (new DfaMinimizer<MATCHRESULT>(rawDfa)).getMinimizedDfa();
-			}
-			serializableDfa = new SerializableDfa<>(minimalDfa);
-		}
-		return serializableDfa;
-	}
-	
+    private SerializableDfa<MATCHRESULT> _build(List<Set<MATCHRESULT>> languages, DfaAmbiguityResolver<? super MATCHRESULT> ambiguityResolver)
+    {
+        Nfa<MATCHRESULT> nfa = new Nfa<>();
+        
+        int[] nfaStartStates = new int[languages.size()];
+        for (int i=0; i<languages.size(); ++i)
+        {
+            nfaStartStates[i] = nfa.addState(null);
+        }
+        
+        if (ambiguityResolver == null)
+        {
+            ambiguityResolver = DfaBuilder::defaultAmbiguityResolver;
+        }
+        
+        for (Entry<MATCHRESULT, List<Matchable>> patEntry : m_patterns.entrySet())
+        {
+            List<Matchable> patList = patEntry.getValue();
+            if (patList == null || patList.size()<1)
+            {
+                continue;
+            }
+            int matchState = -1; //start state for matching this token
+            for (int i=0; i<languages.size(); ++i)
+            {
+                if (!languages.get(i).contains(patEntry.getKey()))
+                {
+                    continue;
+                }
+                if (matchState<0)
+                {
+                    int acceptState = nfa.addState(patEntry.getKey()); //final state accepting this token
+                    if (patList.size()>1)
+                    {
+                        //we have multiple patterns.  Make a union
+                        matchState = nfa.addState(null);
+                        for (Matchable pat : patList)
+                        {
+                            nfa.addEpsilon(matchState, pat.addToNFA(nfa, acceptState));
+                        }
+                    }
+                    else
+                    {
+                        //only one pattern no union necessary
+                        matchState = patList.get(0).addToNFA(nfa, acceptState);
+                    }
+                }
+                //language i matches these patterns
+                nfa.addEpsilon(nfaStartStates[i],matchState);
+            }
+        }
+        
+        SerializableDfa<MATCHRESULT> serializableDfa;
+        {
+            RawDfa<MATCHRESULT> minimalDfa;
+            {
+                RawDfa<MATCHRESULT> rawDfa = (new DfaFromNfa<MATCHRESULT>(nfa, nfaStartStates, ambiguityResolver)).getDfa();
+                minimalDfa = (new DfaMinimizer<MATCHRESULT>(rawDfa)).getMinimizedDfa();
+            }
+            serializableDfa = new SerializableDfa<>(minimalDfa);
+        }
+        return serializableDfa;
+    }
+    
     private SerializableDfa<Boolean> _buildReverseFinders(List<Set<MATCHRESULT>> languages)
     {
         Nfa<Boolean> nfa = new Nfa<>();
@@ -522,7 +522,7 @@ public class DfaBuilder<MATCHRESULT extends Serializable>
     }
     
     private static <T> T defaultAmbiguityResolver(Set<T> matches)
-	{
+    {
         throw new DfaAmbiguityException(matches);
-	}
+    }
 }

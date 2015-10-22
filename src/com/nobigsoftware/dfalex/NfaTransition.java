@@ -22,7 +22,7 @@ import java.io.Serializable;
  * <P>
  * Instances of this class are immutable
  */
-public class NfaTransition implements Serializable
+public final class NfaTransition implements Serializable
 {
     private static final long serialVersionUID = 1L;
     
@@ -53,4 +53,25 @@ public class NfaTransition implements Serializable
 		m_lastChar = lastChar;
 		m_stateNum = stateNum;
 	}
+
+    @Override
+    public boolean equals(Object arg)
+    {
+        if (arg instanceof NfaTransition)
+        {
+            NfaTransition r = (NfaTransition)arg;
+            return (r.m_firstChar == m_firstChar && r.m_lastChar==m_lastChar && r.m_stateNum == m_stateNum);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = (int)2166136261L;
+        hash = (hash ^ (int)m_firstChar)*16777619;
+        hash = (hash ^ (int)m_lastChar)*16777619;
+        hash = (hash ^ (int)m_stateNum)*16777619;
+        return hash ^ (hash>>16);
+    }
 }

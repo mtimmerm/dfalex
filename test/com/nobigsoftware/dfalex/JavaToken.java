@@ -122,7 +122,7 @@ public enum JavaToken {
     
     STRING_LITERAL(
         match("\"")
-        .thenRepeat(anyOf(
+        .thenMaybeRepeat(anyOf(
             CharRange.builder().addChars("\r\n\"\\").invert().build(), //literal string char
             SubPatterns.STRING_ESCAPE
         ))
@@ -138,14 +138,14 @@ public enum JavaToken {
         .then("\'")
     ),
     
-    INTEGER_LITERAL(regex("[+\\-](0|[1-9][0-9]*|0[0-7]+|0[xX][0-9a-fA-F]+)")),
+    INTEGER_LITERAL(regex("[+\\-]?(0|[1-9][0-9]*|0[0-7]+|0[xX][0-9a-fA-F]+)")),
         
     LONG_LITERAL(
         INTEGER_LITERAL.m_pattern.then(anyCharIn("lL"))
     ),
             
     DOUBLE_LITERAL(
-        anyCharIn("+-").then(anyOf(
+        maybe(anyCharIn("+-")).then(anyOf(
              SubPatterns.DIGITS_WITH_DECIMAL.thenMaybe(SubPatterns.EXPONENT),
              repeat(CharRange.DIGITS).then(SubPatterns.EXPONENT)
         ))

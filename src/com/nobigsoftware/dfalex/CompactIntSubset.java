@@ -110,12 +110,6 @@ class CompactIntSubset
 		return true;
 	}
 	
-	private static final int[] DEBRUIJN_WINDOW_TO_BIT_POSITION= 
-	{
-	  0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8, 
-	  31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
-	};
-	
 	public void dumpInOrder(IntConsumer target)
 	{
 		_sortMarks();
@@ -125,10 +119,8 @@ class CompactIntSubset
 			int bits = m_bitmask[wordIndex];
 			while(bits != 0)
 			{
-				int lowbit = bits&-bits;
-				bits-=lowbit;
-				int bitIndex = DEBRUIJN_WINDOW_TO_BIT_POSITION[((lowbit * 0x077CB531) >>> 27)&31];
-				target.accept((wordIndex<<5)+bitIndex);
+				target.accept((wordIndex<<5)+BitUtils.lowBitIndex(bits));
+                bits = BitUtils.turnOffLowBit(bits);
 			}
 		}
 	}
@@ -145,9 +137,6 @@ class CompactIntSubset
             int bits = m_bitmask[wordIndex];
             while(bits != 0)
             {
-                int lowbit = bits&-bits;
-                bits-=lowbit;
-                int bitIndex = DEBRUIJN_WINDOW_TO_BIT_POSITION[((lowbit * 0x077CB531) >>> 27)&31];
                 if (first)
                 {
                     first = false;
@@ -156,7 +145,8 @@ class CompactIntSubset
                 {
                     sb.append(",");
                 }
-                sb.append((wordIndex<<5)+bitIndex);
+                sb.append((wordIndex<<5)+BitUtils.lowBitIndex(bits));
+                bits = BitUtils.turnOffLowBit(bits);
             }
         }
 	    sb.append("]");

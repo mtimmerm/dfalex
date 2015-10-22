@@ -1,11 +1,3 @@
-package com.nobigsoftware.util;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.security.DigestOutputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
 /*
  * Copyright 2015 Matthew Timmermans
  * 
@@ -21,6 +13,14 @@ import java.security.NoSuchAlgorithmException;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.nobigsoftware.util;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.security.DigestOutputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 /**
  * An output stream that computes the SHA hash of whatever you write to it
  */

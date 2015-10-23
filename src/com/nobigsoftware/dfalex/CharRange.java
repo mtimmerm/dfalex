@@ -112,12 +112,11 @@ public class CharRange implements Matchable
         }
         if (out >= Character.MAX_VALUE)
         {
-            m_bounds = new char[]
-            { in };
-        } else
+            m_bounds = new char[]{ in };
+        } 
+        else
         {
-            m_bounds = new char[]
-            { in, (char) (out + 1) };
+            m_bounds = new char[]{ in, (char) (out + 1) };
         }
     }
 
@@ -164,7 +163,8 @@ public class CharRange implements Matchable
             }
             return new CharRange(Arrays.copyOfRange(m_bounds, 1,
                     m_bounds.length));
-        } else
+        } 
+        else
         {
             char[] ar = new char[m_bounds.length + 1];
             System.arraycopy(m_bounds, 0, ar, 1, m_bounds.length);
@@ -245,7 +245,8 @@ public class CharRange implements Matchable
             if (i + 1 < len)
             {
                 clast = (char) (m_bounds[i + 1] - 1);
-            } else
+            }
+            else
             {
                 clast = Character.MAX_VALUE;
             }
@@ -512,7 +513,8 @@ public class CharRange implements Matchable
                 {
                     m_inouts[i] = m_inouts[i + 1] ^ 1;
                 }
-            } else
+            }
+            else
             {
                 // current range !includes 0
                 _reserve(1);

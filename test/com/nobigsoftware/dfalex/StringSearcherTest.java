@@ -58,7 +58,7 @@ public class StringSearcherTest extends TestBase
     }
     
     
-    static int tokenReplace(StringBuilder dest, JavaToken mr, String src, int startPos, int endPos)
+    static int tokenReplace(SafeAppendable dest, JavaToken mr, String src, int startPos, int endPos)
     {
         dest.append("[").append(mr.name()).append("=").append(src, startPos, endPos).append("]");
         return 0;

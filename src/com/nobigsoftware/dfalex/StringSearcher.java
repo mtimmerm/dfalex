@@ -131,22 +131,22 @@ public class StringSearcher<MATCHRESULT>
     public String findAndReplace(String src, ReplaceFunc<? super MATCHRESULT> replacer)
     {
         StringMatchIterator<MATCHRESULT> it = searchString(src);
-        StringBuilder sb=null;
+        StringReplaceAppendable dest=null;
         int doneTo=0;
         while(it.hasNext())
         {
             MATCHRESULT mr = it.next();
             int s = it.matchStartPosition();
             int e = it.matchEndPosition();
-            if (sb == null)
+            if (dest == null)
             {
-                sb = new StringBuilder();
+                dest = new StringReplaceAppendable(src);
             }
             if (doneTo < s)
             {
-                sb.append(src, doneTo, s);
+                dest.append(src, doneTo, s);
             }
-            doneTo = replacer.apply(sb, mr, src, s, e);
+            doneTo = replacer.apply(dest, mr, src, s, e);
             if (doneTo <= 0)
             {
                 doneTo = e;
@@ -160,13 +160,13 @@ public class StringSearcher<MATCHRESULT>
                 it.reposition(doneTo);
             }
         }
-        if (sb != null)
+        if (dest != null)
         {
             if (doneTo < src.length())
             {
-                sb.append(src, doneTo, src.length());
+                dest.append(src, doneTo, src.length());
             }
-            return sb.toString();
+            return dest.toString();
         }
         else
         {
@@ -193,7 +193,7 @@ public class StringSearcher<MATCHRESULT>
          *      replacement.  If you set this &lt;= startPos, a runtime exception will be thrown to
          *      abort the infinite loop that would result.  Almost always return 0.
          */
-        int apply(StringBuilder dest, MR mr, String src, int startPos, int endPos);
+        int apply(SafeAppendable dest, MR mr, String src, int startPos, int endPos);
     }
 
     private static class IteratorImpl<MR> implements StringMatchIterator<MR>

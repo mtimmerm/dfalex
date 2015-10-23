@@ -182,7 +182,7 @@ public class DfaBuilder<MATCHRESULT extends Serializable>
      * produce a {@link Boolean#TRUE} result at every position where a non-empty string match for one of the
      * patterns starts. At other positions it will produce null result. 
      * <P>
-     * For searching through an entire string, using a reverse finder with RFStringMatcher is faster than matching
+     * For searching through an entire string, using a reverse finder with {@link StringSearcher} is faster than matching
      * with just the DFA for the language, especially for strings that have no matches.
      * 
      * @return The start state for the reverse finder DFA
@@ -202,7 +202,7 @@ public class DfaBuilder<MATCHRESULT extends Serializable>
      * produce a {@link Boolean#TRUE} result at every position where a non-empty string in the language starts. At
      * other positions it will produce null result. 
      * <P>
-     * For searching through an entire string, using a reverse finder with RFStringMatcher is faster than matching
+     * For searching through an entire string, using a reverse finder with {@link StringSearcher} is faster than matching
      * with just the DFA for the language, especially for strings that have no matches.
      * 
      * @param language     set defining the languages to build
@@ -223,7 +223,7 @@ public class DfaBuilder<MATCHRESULT extends Serializable>
      * produce a {@link Boolean#TRUE} result at every position where a non-empty string in the language starts. At
      * other positions it will produce null result. 
      * <P>
-     * For searching through an entire string, using a reverse finder with RFStringMatcher is faster than matching
+     * For searching through an entire string, using a reverse finder with {@link StringSearcher} is faster than matching
      * with just the DFA for the language, especially for strings that have no matches.
      * 
      * @param languages     sets defining the languages to build

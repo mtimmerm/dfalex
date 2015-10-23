@@ -33,6 +33,6 @@ public interface StringReplacement
      *      replacement.  If you set this &lt;= startPos, an IndexOutOfBoundsException will be thrown to
      *      abort the infinite loop that would result.  Almost always return 0.
      */
-    int apply(StringBuilder dest, String src, int startPos, int endPos);
+    int apply(SafeAppendable dest, String src, int startPos, int endPos);
 }
 

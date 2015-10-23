@@ -76,12 +76,14 @@ public class SearchAndReplaceBuilder
      * Add a search and replace pattern
      * @param pat   The pattern to search for
      * @param replacement   A function to generate the replacement value
+     * @return this
      */
-    public void addPattern(Matchable pat, StringReplacement replacement)
+    public SearchAndReplaceBuilder addPattern(Matchable pat, StringReplacement replacement)
     {
         Integer result = m_replacements.size();
         m_replacements.add(replacement);
         m_dfaBuilder.addPattern(pat, result);
+        return this;
     }
     
     /**

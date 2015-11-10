@@ -30,7 +30,7 @@ public class StringSearcherTest extends TestBase
         for (JavaToken tok : JavaToken.values())
         {
             final JavaToken t = tok;
-            builder.addPattern(tok.m_pattern, (dest, src, s, e) -> tokenReplace(dest, t, src, s, e));
+            builder.addReplacement(tok.m_pattern, (dest, src, s, e) -> tokenReplace(dest, t, src, s, e));
         }
         Function<String, String> replacer = builder.build();
         String instr = _readResource("SearcherTestInput.txt");
@@ -43,7 +43,7 @@ public class StringSearcherTest extends TestBase
     public void repositionTest() throws Exception
     {
         SearchAndReplaceBuilder builder = new SearchAndReplaceBuilder();
-        builder.addPattern(Pattern.regexI("[a-z0-9]+ +[a-z0-9]+"), (dest, src, s, e) -> {
+        builder.addReplacement(Pattern.regexI("[a-z0-9]+ +[a-z0-9]+"), (dest, src, s, e) -> {
             for (e=s;src.charAt(e)!=' ';++e);
             dest.append(src, s, e).append(", ");
             for (;src.charAt(e)==' ';++e);
@@ -56,6 +56,74 @@ public class StringSearcherTest extends TestBase
         String have = replacer.apply(instr);
         Assert.assertEquals(want, have);
     }
+    
+    @Test
+    public void replacementDeleteIgnoreTest() throws Exception
+    {
+        SearchAndReplaceBuilder builder = new SearchAndReplaceBuilder();
+        builder.addReplacement(Pattern.regexI("three"), StringReplacements.IGNORE);
+        builder.addReplacement(Pattern.regexI("[a-z0-9]+"), StringReplacements.DELETE);
+        Function<String, String> replacer = builder.build();
+        
+        String instr = " one two  three   four five ";
+        String want = "    three     ";
+        String have = replacer.apply(instr);
+        Assert.assertEquals(want, have);
+    }
+    
+    @Test
+    public void replacementSpaceOrNewlineTest() throws Exception
+    {
+        SearchAndReplaceBuilder builder = new SearchAndReplaceBuilder();
+        builder.addReplacement(Pattern.regexI("[\000- ]+"), StringReplacements.SPACE_OR_NEWLINE);
+        Function<String, String> replacer = builder.build();
+        
+        String instr = "    one \n two\r\n\r\nthree  \t four\n\n\nfive ";
+        String want = " one\ntwo\nthree four\nfive ";
+        String have = replacer.apply(instr);
+        Assert.assertEquals(want, have);
+    }
+    
+    @Test
+    public void replacementCaseTest() throws Exception
+    {
+        SearchAndReplaceBuilder builder = new SearchAndReplaceBuilder();
+        builder.addReplacement(Pattern.regexI("u[a-zA-z]*"), StringReplacements.TOUPPER);
+        builder.addReplacement(Pattern.regexI("l[a-zA-z]*"), StringReplacements.TOLOWER);
+        Function<String, String> replacer = builder.build();
+        
+        String instr = "lAbCd uAbCd";
+        String want = "labcd UABCD";
+        String have = replacer.apply(instr);
+        Assert.assertEquals(want, have);
+    }
+    
+    @Test
+    public void replacementStringTest() throws Exception
+    {
+        SearchAndReplaceBuilder builder = new SearchAndReplaceBuilder();
+        builder.addReplacement(Pattern.regexI("[a-zA-z]*"), StringReplacements.string("x"));
+        Function<String, String> replacer = builder.build();
+        
+        String instr = " one two  three   four five ";
+        String want = " x x  x   x x ";
+        String have = replacer.apply(instr);
+        Assert.assertEquals(want, have);
+    }
+    
+    @Test
+    public void replacementSurroundTest() throws Exception
+    {
+        SearchAndReplaceBuilder builder = new SearchAndReplaceBuilder();
+        builder.addReplacement(Pattern.regexI("[a-zA-z]*"), StringReplacements.surround("(", StringReplacements.TOUPPER, ")"));
+        Function<String, String> replacer = builder.build();
+        
+        String instr = " one two  three   four five ";
+        String want = " (ONE) (TWO)  (THREE)   (FOUR) (FIVE) ";
+        String have = replacer.apply(instr);
+        Assert.assertEquals(want, have);
+    }
+    
     
     
     static int tokenReplace(SafeAppendable dest, JavaToken mr, String src, int startPos, int endPos)

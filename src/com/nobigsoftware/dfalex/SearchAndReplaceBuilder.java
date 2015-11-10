@@ -16,6 +16,7 @@
 package com.nobigsoftware.dfalex;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -73,12 +74,34 @@ public class SearchAndReplaceBuilder
     
     
     /**
-     * Add a search and replace pattern
+     * Add a search + string replacement.
+     * <P>
+     * Occurrences of the search pattern will be replaced with the given string.
+     * <P>
+     * This is equivalent to addReplacement(pat, StringReplacements.string(replacement));
+     * 
      * @param pat   The pattern to search for
      * @param replacement   A function to generate the replacement value
      * @return this
      */
-    public SearchAndReplaceBuilder addPattern(Matchable pat, StringReplacement replacement)
+    public SearchAndReplaceBuilder addStringReplacement(Matchable pat, CharSequence replacement)
+    {
+        return addReplacement(pat, StringReplacements.string(replacement));
+    }
+    
+    /**
+     * Add a dynamic search + replacement.
+     * <P>
+     * The provided replacement function will be called to generate the replacement value for each
+     * occurrence of the search pattern.
+     * <P>
+     * {@link StringReplacements} contains commonly used replacement functions
+     * 
+     * @param pat   The pattern to search for
+     * @param replacement   A function to generate the replacement value
+     * @return this
+     */
+    public SearchAndReplaceBuilder addReplacement(Matchable pat, StringReplacement replacement)
     {
         Integer result = m_replacements.size();
         m_replacements.add(replacement);
@@ -87,12 +110,31 @@ public class SearchAndReplaceBuilder
     }
     
     /**
+     * Add a pattern to ignore
+     * <P>
+     * Occurrences of the search pattern will be left alone.  This just adds a replacer that
+     * replaces occurrences of the search pattern with the same string.
+     * <P>
+     * With careful attention to match priority rules (see {@link #build()}, this can be used for many
+     * special purposes.
+     * <P>
+     * This is equivalent to addReplacement(pat, StringReplacements.IGNORE);
+     * 
+     * @param pat   The pattern to search for
+     * @return this
+     */
+    public SearchAndReplaceBuilder addIgnorePattern(Matchable pat)
+    {
+        return addReplacement(pat, StringReplacements.IGNORE);
+    }
+    
+    /**
      * Build a search and replace function
      * <P>
      * The resulting function finds all patterns in the string you give it, and replaces them all with
-     * the associated {@link StringReplacement}.
+     * the associated replacement.
      * <P>
-     * Matches are found in order.  If matches to more than one pattern occur at the same position,
+     * Matches are found in order of their start positions.  If matches to more than one pattern occur at the same position,
      * then the <i>longest</i> match will be used.  If there is a tie, then the first one added to this
      * builder will be used.
      *
@@ -101,9 +143,7 @@ public class SearchAndReplaceBuilder
     public Function<String,String> build()
     {
         final StringSearcher<Integer> searcher = m_dfaBuilder.buildStringSearcher(SearchAndReplaceBuilder::ambiguityResolver);
-        final StringReplacement[] funcs = m_replacements.toArray(new StringReplacement[m_replacements.size()]);
-        final StringSearcher.ReplaceFunc<Integer> replacer = (dest, mr, src, startPos, endPos) ->
-            funcs[mr].apply(dest, src, startPos, endPos);
+        final StringSearcherReplacer replacer = new StringSearcherReplacer(m_replacements);
         return (str -> searcher.findAndReplace(str, replacer));
     }
     
@@ -130,5 +170,22 @@ public class SearchAndReplaceBuilder
             }
         }
         return ret;
+    }
+    
+    private static class StringSearcherReplacer implements StringSearcher.ReplaceFunc<Integer>
+    {
+        final StringReplacement[] m_replacements;
+        
+        public StringSearcherReplacer(List<StringReplacement> replacements)
+        {
+            m_replacements = replacements.toArray(new StringReplacement[replacements.size()]);
+        }
+
+        @Override
+        public int apply(SafeAppendable dest, Integer mr, String src,
+                int startPos, int endPos)
+        {
+            return m_replacements[mr].apply(dest, src, startPos, endPos);
+        }
     }
 }

@@ -26,13 +26,13 @@ public interface StringReplacement
      * This will be called for each instance of each pattern found
      * 
      * @param dest  The replacement text for the matching substring should be written here
-     * @param src   The string being searched
+     * @param src   The string being searched, or the part of the stream being searched that contains the current match
      * @param startPos  the start index of the current match in src
      * @param endPos    the end index of the current match in src
      * @return if this is &gt;0, then it is the position in the source string at which to continue processing after
      *      replacement.  If you set this &lt;= startPos, an IndexOutOfBoundsException will be thrown to
      *      abort the infinite loop that would result.  Almost always return 0.
      */
-    int apply(SafeAppendable dest, String src, int startPos, int endPos);
+    int apply(SafeAppendable dest, CharSequence src, int startPos, int endPos);
 }
 

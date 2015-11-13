@@ -125,10 +125,10 @@ public class StringSearcher<MATCHRESULT>
      * If it returns a String, then the pattern occurrence will be replaced with the string returned.
      * 
      * @param src  the String to search   
-     * @param replacer  the {@link ReplaceFunc} that provides new values for matches in the string
+     * @param replacer  the {@link ReplacementSelector} that provides new values for matches in the string
      * @return the new string with values replaced
      */
-    public String findAndReplace(String src, ReplaceFunc<? super MATCHRESULT> replacer)
+    public String findAndReplace(String src, ReplacementSelector<? super MATCHRESULT> replacer)
     {
         StringMatchIterator<MATCHRESULT> it = searchString(src);
         StringReplaceAppendable dest=null;
@@ -174,27 +174,6 @@ public class StringSearcher<MATCHRESULT>
         }
     }
 
-
-    /**
-     * Functional interface that is called by a {@link StringSearcher#findAndReplace(String, ReplaceFunc)} to replace instances
-     * of patterns found in a string.
-     */
-    public static interface ReplaceFunc<MR>
-    {
-        /**
-         * This will be called for each instance of each pattern found
-         * 
-         * @param dest  The replacement text for the matching substring should be written here
-         * @param mr    The MATCHRESULT produced by the match
-         * @param src   The string being searched
-         * @param startPos  the start index of the current match in src
-         * @param endPos    the end index of the current match in src
-         * @return if this is &gt;0, then it is the position in the source string at which to continue processing after
-         *      replacement.  If you set this &lt;= startPos, a runtime exception will be thrown to
-         *      abort the infinite loop that would result.  Almost always return 0.
-         */
-        int apply(SafeAppendable dest, MR mr, String src, int startPos, int endPos);
-    }
 
     private static class IteratorImpl<MR> implements StringMatchIterator<MR>
     {

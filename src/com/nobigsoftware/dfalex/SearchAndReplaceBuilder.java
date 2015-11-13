@@ -44,6 +44,8 @@ public class SearchAndReplaceBuilder
 {
     private final DfaBuilder<Integer> m_dfaBuilder;
     private final ArrayList<StringReplacement> m_replacements = new ArrayList<>();
+    private DfaState<Integer> m_dfaMemo = null;
+    private DfaState<Boolean> m_reverseFinderMemo = null;
 
     /**
      * Create a new SearchAndReplaceBuilder without a {@link BuilderCache}
@@ -68,6 +70,7 @@ public class SearchAndReplaceBuilder
      */
     public void clear()
     {
+        _clearMemos();
         m_dfaBuilder.clear();
         m_replacements.clear();
     }
@@ -103,6 +106,7 @@ public class SearchAndReplaceBuilder
      */
     public SearchAndReplaceBuilder addReplacement(Matchable pat, StringReplacement replacement)
     {
+        _clearMemos();
         Integer result = m_replacements.size();
         m_replacements.add(replacement);
         m_dfaBuilder.addPattern(pat, result);
@@ -115,7 +119,7 @@ public class SearchAndReplaceBuilder
      * Occurrences of the search pattern will be left alone.  This just adds a replacer that
      * replaces occurrences of the search pattern with the same string.
      * <P>
-     * With careful attention to match priority rules (see {@link #build()}, this can be used for many
+     * With careful attention to match priority rules (see {@link #buildStringReplacer()}, this can be used for many
      * special purposes.
      * <P>
      * This is equivalent to addReplacement(pat, StringReplacements.IGNORE);
@@ -140,9 +144,17 @@ public class SearchAndReplaceBuilder
      *
      * @return The search+replace function
      */
-    public Function<String,String> build()
+    public Function<String,String> buildStringReplacer()
     {
-        final StringSearcher<Integer> searcher = m_dfaBuilder.buildStringSearcher(SearchAndReplaceBuilder::ambiguityResolver);
+        if (m_dfaMemo == null)
+        {
+            m_dfaMemo = m_dfaBuilder.build(SearchAndReplaceBuilder::ambiguityResolver);
+        }
+        if (m_reverseFinderMemo == null)
+        {
+            m_reverseFinderMemo = m_dfaBuilder.buildReverseFinder();
+        }
+        final StringSearcher<Integer> searcher = new StringSearcher<>(m_dfaMemo, m_reverseFinderMemo);
         final StringSearcherReplacer replacer = new StringSearcherReplacer(m_replacements);
         return (str -> searcher.findAndReplace(str, replacer));
     }
@@ -154,11 +166,16 @@ public class SearchAndReplaceBuilder
      * @param replacer the replacer
      * @return The search+replace function
      */
-    public static <MR> Function<String,String> buildFromSearcher(StringSearcher<MR> searcher, StringSearcher.ReplaceFunc<? super MR> replacer)
+    public static <MR> Function<String,String> buildFromSearcher(StringSearcher<MR> searcher, ReplacementSelector<? super MR> replacer)
     {
         return (str -> searcher.findAndReplace(str, replacer));
     }
     
+    private void _clearMemos()
+    {
+        m_dfaMemo = null;
+        m_reverseFinderMemo = null;
+    }
     private static Integer ambiguityResolver(Set<? extends Integer> candidates)
     {
         Integer ret = null;
@@ -172,7 +189,7 @@ public class SearchAndReplaceBuilder
         return ret;
     }
     
-    private static class StringSearcherReplacer implements StringSearcher.ReplaceFunc<Integer>
+    private static class StringSearcherReplacer implements ReplacementSelector<Integer>
     {
         final StringReplacement[] m_replacements;
         
@@ -182,7 +199,7 @@ public class SearchAndReplaceBuilder
         }
 
         @Override
-        public int apply(SafeAppendable dest, Integer mr, String src,
+        public int apply(SafeAppendable dest, Integer mr, CharSequence src,
                 int startPos, int endPos)
         {
             return m_replacements[mr].apply(dest, src, startPos, endPos);

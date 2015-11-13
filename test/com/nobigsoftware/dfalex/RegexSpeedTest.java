@@ -25,7 +25,7 @@ public class RegexSpeedTest extends TestBase
         {
             SearchAndReplaceBuilder builder=new SearchAndReplaceBuilder();
             builder.addReplacement(Pattern.regex(patString), (dest, srcStr, s, e) -> 0);
-            replacer = builder.build();
+            replacer = builder.buildStringReplacer();
         }
         int javaCount = 0, builderCount = 0;
         

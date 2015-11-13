@@ -32,7 +32,7 @@ public class StringSearcherTest extends TestBase
             final JavaToken t = tok;
             builder.addReplacement(tok.m_pattern, (dest, src, s, e) -> tokenReplace(dest, t, src, s, e));
         }
-        Function<String, String> replacer = builder.build();
+        Function<String, String> replacer = builder.buildStringReplacer();
         String instr = _readResource("SearcherTestInput.txt");
         String want = _readResource("SearcherTestOutput.txt");
         String have = replacer.apply(instr);
@@ -49,7 +49,7 @@ public class StringSearcherTest extends TestBase
             for (;src.charAt(e)==' ';++e);
             return e;
         });
-        Function<String, String> replacer = builder.build();
+        Function<String, String> replacer = builder.buildStringReplacer();
         
         String instr = " one two  three   four five ";
         String want = " one, two, three, four, five ";
@@ -63,7 +63,7 @@ public class StringSearcherTest extends TestBase
         SearchAndReplaceBuilder builder = new SearchAndReplaceBuilder();
         builder.addReplacement(Pattern.regexI("three"), StringReplacements.IGNORE);
         builder.addReplacement(Pattern.regexI("[a-z0-9]+"), StringReplacements.DELETE);
-        Function<String, String> replacer = builder.build();
+        Function<String, String> replacer = builder.buildStringReplacer();
         
         String instr = " one two  three   four five ";
         String want = "    three     ";
@@ -76,7 +76,7 @@ public class StringSearcherTest extends TestBase
     {
         SearchAndReplaceBuilder builder = new SearchAndReplaceBuilder();
         builder.addReplacement(Pattern.regexI("[\000- ]+"), StringReplacements.SPACE_OR_NEWLINE);
-        Function<String, String> replacer = builder.build();
+        Function<String, String> replacer = builder.buildStringReplacer();
         
         String instr = "    one \n two\r\n\r\nthree  \t four\n\n\nfive ";
         String want = " one\ntwo\nthree four\nfive ";
@@ -90,7 +90,7 @@ public class StringSearcherTest extends TestBase
         SearchAndReplaceBuilder builder = new SearchAndReplaceBuilder();
         builder.addReplacement(Pattern.regexI("u[a-zA-z]*"), StringReplacements.TOUPPER);
         builder.addReplacement(Pattern.regexI("l[a-zA-z]*"), StringReplacements.TOLOWER);
-        Function<String, String> replacer = builder.build();
+        Function<String, String> replacer = builder.buildStringReplacer();
         
         String instr = "lAbCd uAbCd";
         String want = "labcd UABCD";
@@ -103,7 +103,7 @@ public class StringSearcherTest extends TestBase
     {
         SearchAndReplaceBuilder builder = new SearchAndReplaceBuilder();
         builder.addReplacement(Pattern.regexI("[a-zA-z]*"), StringReplacements.string("x"));
-        Function<String, String> replacer = builder.build();
+        Function<String, String> replacer = builder.buildStringReplacer();
         
         String instr = " one two  three   four five ";
         String want = " x x  x   x x ";
@@ -116,7 +116,7 @@ public class StringSearcherTest extends TestBase
     {
         SearchAndReplaceBuilder builder = new SearchAndReplaceBuilder();
         builder.addReplacement(Pattern.regexI("[a-zA-z]*"), StringReplacements.surround("(", StringReplacements.TOUPPER, ")"));
-        Function<String, String> replacer = builder.build();
+        Function<String, String> replacer = builder.buildStringReplacer();
         
         String instr = " one two  three   four five ";
         String want = " (ONE) (TWO)  (THREE)   (FOUR) (FIVE) ";
@@ -126,7 +126,7 @@ public class StringSearcherTest extends TestBase
     
     
     
-    static int tokenReplace(SafeAppendable dest, JavaToken mr, String src, int startPos, int endPos)
+    static int tokenReplace(SafeAppendable dest, JavaToken mr, CharSequence src, int startPos, int endPos)
     {
         dest.append("[").append(mr.name()).append("=").append(src, startPos, endPos).append("]");
         return 0;

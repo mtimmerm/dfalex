@@ -101,7 +101,8 @@ public class StringReplacements
      * 
      * @param prefix to put before matches
      * @param replacement for the match itself
-     * @return suffix to put after matches
+     * @param suffix suffix to put after matches
+     * @return new StringReplacement
      */
     public static final StringReplacement surround(CharSequence prefix, StringReplacement replacement, CharSequence suffix)
     {

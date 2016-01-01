@@ -4,7 +4,7 @@ package com.nobigsoftware.dfalex;
  * For search and replace operations, a functional interface that is called to select replacement text for
  * matches, based on the MATCHRESULT.
  * <P>
- * This is called by a {@link StringSearcher#findAndReplace(String, ReplaceFunc)} to replace instances
+ * This is called by a {@link StringSearcher#findAndReplace(String, ReplacementSelector)} to replace instances
  * of patterns found in a string.
  */
 public interface ReplacementSelector<MATCHRESULT>

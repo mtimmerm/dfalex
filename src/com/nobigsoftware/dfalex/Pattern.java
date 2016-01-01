@@ -159,7 +159,14 @@ public abstract class Pattern implements Matchable
     /**
      * Parse the given regular expression into a pattern.
      * <P>
-     * See {@link RegexParser} for syntax information
+     * Syntax supported includes:
+     * <UL><LI>. (matches ANY character, including newlines)
+     * </LI><LI> ?, +, *, |, ()
+     * </LI><LI> [abc][^abc][a-zA-Z0-9], etc., character sets (
+     * </LI><LI> \t, \n, \r, \f, \a, \e, &#92;xXX, &#92;uXXXX, \cX character escapes
+     * </LI><LI> \\, or \x, where x is any non-alphanumeric character.  character escape for x
+     * </LI><LI> \d, \D, \s, \S, \w, \W class escapes
+     * </LI></UL>
      * 
      * @param regex regular expression string to parse
      * @return a pattern that implements the regular expression
@@ -172,7 +179,7 @@ public abstract class Pattern implements Matchable
     /**
      * Parse the given regular expression into a pattern, case independent
      * <P>
-     * See {@link RegexParser} for syntax information
+     * See {@link #regex(String)} for syntax information
      * 
      * @param regex regular expression string to parse
      * @return a pattern that implements the regular expression

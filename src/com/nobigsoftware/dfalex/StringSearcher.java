@@ -346,7 +346,7 @@ public class StringSearcher<MATCHRESULT>
                     return false;
                 }
                 //all bits with positions >= start&31
-                int mask = BitUtils.bitsGE(start&31);
+                int mask = -1<<(start&31);
                 mask &= m_matchMask[wi];    //only ones with bits set
                 if (mask == 0)
                 {

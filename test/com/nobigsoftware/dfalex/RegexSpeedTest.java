@@ -2,6 +2,7 @@ package com.nobigsoftware.dfalex;
 
 import java.util.function.Function;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 public class RegexSpeedTest extends TestBase
@@ -20,15 +21,18 @@ public class RegexSpeedTest extends TestBase
             }
             src = sb.toString();
         }
-        java.util.regex.Pattern javapat = java.util.regex.Pattern.compile(patString);
-        Function<String,String> replacer;
-        {
-            SearchAndReplaceBuilder builder=new SearchAndReplaceBuilder();
-            builder.addReplacement(Pattern.regex(patString), (dest, srcStr, s, e) -> 0);
-            replacer = builder.buildStringReplacer();
-        }
-        int javaCount = 0, builderCount = 0;
         
+        int javaCount = timeJava(src, patString);
+        int srCount = timeSearchAndReplaceBuilder(src, patString);
+        int matcherCount = timeMatcher(src, patString);
+        System.out.println("Search+Replace per second in 100K string, patterns not found:");
+        System.out.format("Java Regex: %d    SearchAndReplaceBuilder: %d    StringMatcher: %d\n", javaCount, srCount, matcherCount);
+    }
+    
+    int timeJava(String src, String patString)
+    {
+        int count=0;
+        java.util.regex.Pattern javapat = java.util.regex.Pattern.compile(patString);
         long start = System.currentTimeMillis();
         String str = src; 
         for (long t = System.currentTimeMillis()-start;t < SPINUP+1000; t=System.currentTimeMillis()-start)
@@ -36,21 +40,60 @@ public class RegexSpeedTest extends TestBase
             str = javapat.matcher(str).replaceAll("");
             if (t>=SPINUP)
             {
-                ++javaCount;
+                ++count;
             }
         }
-        start = System.currentTimeMillis();
-        str = src; 
+        Assert.assertEquals(src, str);
+        return count;
+    }
+    int timeSearchAndReplaceBuilder(String src, String patString)
+    {
+        Function<String, String> replacer;
+        {
+            SearchAndReplaceBuilder builder=new SearchAndReplaceBuilder();
+            builder.addReplacement(Pattern.regex(patString), (dest, srcStr, s, e) -> 0);
+            replacer = builder.buildStringReplacer();
+        }
+
+        int count=0;
+        long start = System.currentTimeMillis();
+        String str = src; 
         for (long t = System.currentTimeMillis()-start;t < SPINUP+1000; t=System.currentTimeMillis()-start)
         {
             str = replacer.apply(str);
             if (t>=SPINUP)
             {
-                ++builderCount;
+                ++count;
             }
         }
-        
-        System.out.println("Search+Replace per second in 100K string, patterns not found:");
-        System.out.format("Java Regex: %d    SearchAndReplaceBuilder: %d\n", javaCount, builderCount);
+        Assert.assertEquals(src, str);
+        return count;
     }
+    
+    int timeMatcher(String src, String patString)
+    {
+        DfaState<Boolean> startState;
+        {
+            DfaBuilder<Boolean> builder=new DfaBuilder<>();
+            builder.addPattern(Pattern.regex(patString), true);
+            startState = builder.build(null);
+        }
+
+        int count=0;
+        long start = System.currentTimeMillis();
+        for (long t = System.currentTimeMillis()-start;t < SPINUP+1000; t=System.currentTimeMillis()-start)
+        {
+            StringMatcher m = new StringMatcher(src);
+            if (m.findNext(startState)!=null)
+            {
+                throw new RuntimeException("not supposed to find a match");
+            }
+            if (t>=SPINUP)
+            {
+                ++count;
+            }
+        }
+        return count;
+    }
+
 }

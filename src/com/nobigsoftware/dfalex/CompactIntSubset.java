@@ -195,6 +195,5 @@ class CompactIntSubset
 		m_marksize = newsize;
 		Arrays.sort(m_usemarks, 0, m_marksize);
 		m_sorted = true;
-		assert(m_marksize == m_size);
 	}
 }

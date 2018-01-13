@@ -421,7 +421,7 @@ public class DfaBuilder<MATCHRESULT extends Serializable>
 		
 		if (ambiguityResolver == null)
 		{
-			ambiguityResolver = DfaBuilder::defaultAmbiguityResolver;
+			ambiguityResolver = conflicts -> defaultAmbiguityResolver(conflicts);
 		}
 		
 		for (Entry<MATCHRESULT, List<Matchable>> patEntry : m_patterns.entrySet())
@@ -479,7 +479,7 @@ public class DfaBuilder<MATCHRESULT extends Serializable>
         
         int startState = nfa.addState(null);
         final int endState = nfa.addState(true);
-        final DfaAmbiguityResolver<Boolean> ambiguityResolver = DfaBuilder::defaultAmbiguityResolver;
+        final DfaAmbiguityResolver<Boolean> ambiguityResolver = conflicts -> defaultAmbiguityResolver(conflicts);
 
         //First, make an NFA that matches the reverse of all the patterns
         for (Entry<MATCHRESULT, List<Matchable>> patEntry : m_patterns.entrySet())

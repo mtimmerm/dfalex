@@ -86,4 +86,10 @@ abstract class DfaStatePlaceholder<MATCH> extends DfaStateImpl<MATCH> implements
     {
         return m_delegate.getSuccessorStates();
     }
+
+    @Override
+    public boolean hasSuccessorStates()
+    {
+        return m_delegate.hasSuccessorStates();
+    }
 }

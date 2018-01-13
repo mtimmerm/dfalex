@@ -27,6 +27,7 @@ class PackedTreeDfaPlaceholder<MATCH> extends DfaStatePlaceholder<MATCH>
 	private static final long serialVersionUID = 1L;
 	
 	private static final char[] NO_CHARS = new char[0];
+	private static final DfaStateImpl<?>[] NO_SUCC_STATES = new DfaStateImpl[1];
 
 	//Array-packed binary search tree 
 	//The BST contains an internal node for char c if the the transition on c is
@@ -178,6 +179,20 @@ class PackedTreeDfaPlaceholder<MATCH> extends DfaStatePlaceholder<MATCH>
 				M match, int stateNum)
 		{
 			super();
+			boolean haveSucc = false;
+			for (DfaStateImpl<?> st : targetStates)
+			{
+			    if (st != null)
+			    {
+			        haveSucc = true;
+			        break;
+			    }
+			}
+			if (!haveSucc)
+			{
+			    internalNodes = NO_CHARS;
+			    targetStates = NO_SUCC_STATES;
+			}
 			m_internalNodes = internalNodes;
 			m_targetStates = targetStates;
 			m_match = match;
@@ -263,6 +278,12 @@ class PackedTreeDfaPlaceholder<MATCH> extends DfaStatePlaceholder<MATCH>
             }
         }
         
+        @Override
+        public boolean hasSuccessorStates()
+        {
+            return m_targetStates != NO_SUCC_STATES;
+        }
+
         @SuppressWarnings("unchecked")
         private int _enumInternal(final DfaTransitionConsumer<M> consumer, final int target, int previnternal)
         {

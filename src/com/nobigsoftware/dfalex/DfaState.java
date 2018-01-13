@@ -67,4 +67,9 @@ public abstract class DfaState<MATCHRESULT>
      * @return an iterable of successor states.
      */
     public abstract Iterable<DfaState<MATCHRESULT>> getSuccessorStates();
+    
+    /**
+     * @return true if this state has any successor states
+     */
+    public abstract boolean hasSuccessorStates();
 }

@@ -215,5 +215,11 @@ public class TarjanTest
         {
             return m_transitions;
         }
+
+        @Override
+        public boolean hasSuccessorStates()
+        {
+            return !m_transitions.isEmpty();
+        }
     }
 }

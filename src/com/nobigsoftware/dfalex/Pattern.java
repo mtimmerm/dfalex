@@ -990,7 +990,7 @@ public abstract class Pattern implements Matchable
         private static final int F_UNBOUND_MATCH = 32;
         
         private final Matchable[] m_choices;
-		private volatile int mv_flags=0;
+		private transient volatile int mv_flags=0;
 		
 		UnionPattern(Matchable[] choices)
 		{

@@ -12,7 +12,18 @@ public class PrettyPrinter
     private HashMap<DfaState<?>,String> m_transMemo = new HashMap<>();
     private ArrayDeque<DfaState<?>> m_closureQ = new ArrayDeque<>();
     private int m_nextStateNum = 0;
-    
+    private final boolean m_useStateNumbers;
+
+    public PrettyPrinter()
+    {
+        m_useStateNumbers = false;
+    }
+
+    public PrettyPrinter(boolean useStateNumbers)
+    {
+        m_useStateNumbers = useStateNumbers;
+    }
+
     public void print(PrintWriter w, DfaState<?> state)
     {
         m_names.clear();
@@ -75,14 +86,16 @@ public class PrettyPrinter
         if (ret == null)
         {
             Object accept = state.getMatch();
+            int nameNum = (m_useStateNumbers ? state.getStateNumber() : m_nextStateNum);
+            ++m_nextStateNum;
             if (accept == null)
             {
-                ret = "S" + m_nextStateNum++;
+                ret = "S" + nameNum;
                 
             }
             else
             {
-                ret =  "S" + m_nextStateNum++ + ":" + accept.toString(); 
+                ret =  "S" + nameNum + ":" + accept.toString();
             }
             m_names.put(state, ret);
             m_closureQ.add(state);

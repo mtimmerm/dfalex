@@ -338,7 +338,7 @@ class PackedTreeDfaPlaceholder<MATCH> extends DfaStatePlaceholder<MATCH>
         public DfaState<M> next()
         {
             @SuppressWarnings("unchecked")
-            DfaState<M> ret = (DfaState<M>)m_array[m_pos];
+            DfaState<M> ret = (DfaState<M>)m_array[m_pos++];
             for (; m_pos<m_array.length && m_array[m_pos]==null; ++m_pos);
             return ret;
         }

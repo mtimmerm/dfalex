@@ -118,7 +118,7 @@ public class DfaAuxiliaryInformation<MATCHRESULT>
      * 
      * @param onEnter  called with (parent, child) when a child is entered.  parent == null for roots.
      * @param onSkip  called with (parent, child) when a child is skipped because it has been entered
-     *                  previously.  exited.  parent == null for roots.
+     *                  previously.  parent == null for roots.
      * @param onLeave  called with (parent, child) when a child is exited.  parent == null for roots.
      */
     public void depthFirstSearch(

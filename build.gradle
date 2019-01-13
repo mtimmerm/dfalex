@@ -2,12 +2,13 @@ plugins {
     id 'java'
     id 'maven'
     id 'maven-publish'
+    id 'signing'
     id 'idea'
 }
 
 group 'com.nobigsoftware'
 
-version '1.0-SNAPSHOT'
+version '1.0.0-SNAPSHOT'
 
 sourceCompatibility = 1.8
 
@@ -36,4 +37,65 @@ dependencies {
     compile 'javax.annotation:javax.annotation-api:1.2+'
     compile 'com.google.code.findbugs:jsr305:3+'
     testCompile 'junit:junit:4.12+'
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    classifier = 'sources'
+}
+
+task javadocJar(type: Jar) {
+    from javadoc
+    classifier = 'javadoc'
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            groupId = 'com.nobigsoftware'
+            artifactId = 'dfalex'
+            artifact sourcesJar
+            artifact javadocJar
+            pom {
+                name = 'dfalex'
+                description = 'Lexical Analysis in Java Without All The Fuss'
+                url = 'https://github.com/mtimmerm/dfalex'
+
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'mtimmerm'
+                        name = 'Matt Timmermans'
+                        email = 'matt@timmermans.org'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/mtimmerm/dfalex.git'
+                    developerConnection = 'scm:git:ssh://github.com:mtimmerm/dfalex.git'
+                    url = 'http://github.com/mtimmerm/dfalex/tree/master'
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            credentials {
+                username ossrhUsername
+                password ossrhPassword
+            }
+            def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+            def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+        }
+    }
+}
+
+signing {
+    sign publishing.publications.mavenJava
 }

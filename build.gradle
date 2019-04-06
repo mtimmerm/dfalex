@@ -72,7 +72,7 @@ publishing {
                     developer {
                         id = 'mtimmerm'
                         name = 'Matt Timmermans'
-                        email = 'matt@timmermans.org'
+                        email = 'matt@timmermans.removethis.org'
                     }
                 }
                 scm {

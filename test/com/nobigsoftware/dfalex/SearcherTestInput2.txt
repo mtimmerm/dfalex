@@ -1,0 +1,22 @@
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+
+  <name>aalto-xml</name>
+    <javac.target.version>${java.version}</javac.target.version>
+            <exclude>**/*$*</exclude>
+	        <exclude>failing/*.java</exclude>
+          </excludes>
+          <reportFormat>${surefire.format}</reportFormat>
+          <useFile>${surefire.usefile}</useFile>
+          <forkMode>${surefire.fork.mode}</forkMode>
+          <childDelegation>false</childDelegation>
+          <argLine>${surefire.fork.vmargs}</argLine>
+          <systemProperties>
+            <property>
+              <name>java.awt.headless</name>
+              <value>${java.awt.headless}</value>
+            </property>
+            <property>
+              <name>surefire.fork.vmargs</name>
+              <value>${surefire.fork.vmargs}</value>

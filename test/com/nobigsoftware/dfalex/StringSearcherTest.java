@@ -23,6 +23,18 @@ public class StringSearcherTest extends TestBase
     }
 
     @Test
+    public void crazyWontonTest() throws Exception
+    {
+        SearchAndReplaceBuilder builder = new SearchAndReplaceBuilder();
+        builder.addReplacement(Pattern.regexI("(<name>)"), StringReplacements.DELETE);
+        Function<String, String> replacer = builder.buildStringReplacer();
+        String instr = _readResource("SearcherTestInput2.txt");
+        String have = replacer.apply(instr);
+        String want = instr.replaceAll("<name>","").replaceAll("<NAME>","");
+        Assert.assertEquals(want, have);
+    }
+
+    @Test
     public void testReplaceFunc() throws Exception
     {
         SearchAndReplaceBuilder builder = new SearchAndReplaceBuilder();

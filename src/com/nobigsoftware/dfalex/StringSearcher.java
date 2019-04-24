@@ -99,7 +99,7 @@ public class StringSearcher<MATCHRESULT>
                 {
                     //need a longer array
                     int toadd = Math.max(maskStartPos-pos, maskArray.length<<5);
-                    toadd = (toadd|31)>>5; //bits to ints
+                    toadd = (toadd+31)>>5; //bits to ints
                     int[] newMask = new int[maskArray.length + toadd];
                     for (int i=0;i<maskArray.length;++i)
                     {
